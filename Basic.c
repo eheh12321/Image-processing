@@ -2,15 +2,11 @@
 
 FILE* open_image(FILE* inputFile)
 {
-    return inputFile = fopen("./image/AICenter.bmp", "rb");
+    return inputFile = fopen("./image/original/IU_2.bmp", "rb");
 }
 
 int main()
 {
-    // 사진에 대한 정보를 헤더에서 뽑아와서 사용한다.
-    BITMAPFILEHEADER bmpFile;
-    BITMAPINFOHEADER bmpInfo;
-    
     // 가로 x 세로 해서 이차원 배열이 아니다..! 일차원.
     FILE* inputFile = NULL;
 

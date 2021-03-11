@@ -3,11 +3,7 @@
 
 int rgb_color_test()
 {
-    BITMAPFILEHEADER bmpFile;
-    BITMAPINFOHEADER bmpInfo;
-
     FILE* inputFile = NULL;
-
     inputFile = open_image(inputFile);
 
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);

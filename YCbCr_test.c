@@ -3,21 +3,18 @@
 
 int ycbcr_color_test()
 {
-    BITMAPFILEHEADER bmpFile;
-    BITMAPINFOHEADER bmpInfo;
 
     FILE* inputFile = NULL;
-
     inputFile = open_image(inputFile);
-
-    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
-    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
 
     int width = bmpInfo.biWidth;
     int height = bmpInfo.biHeight;
     int size = bmpInfo.biSizeImage;
     int bitCnt = bmpInfo.biBitCount;
     int stride = (((bitCnt / 8) * width) + 3) / 4 * 4;
+
+    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
+    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
 
     unsigned char* inputImg = NULL;
     inputImg = (unsigned char*)calloc(size, sizeof(unsigned char));

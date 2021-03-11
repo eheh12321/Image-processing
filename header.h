@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <windows.h>
 
+// 사진에 대한 정보를 헤더에서 뽑아와서 사용한다.
+BITMAPFILEHEADER bmpFile;
+BITMAPINFOHEADER bmpInfo;
+
 FILE* open_image(FILE *inputFile);
 
 int rgb_color_test();
