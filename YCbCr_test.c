@@ -8,7 +8,7 @@ int ycbcr_color_test()
 
     FILE* inputFile = NULL;
 
-    inputFile = fopen("./image/AICenter.bmp", "rb");
+    inputFile = open_image(inputFile);
 
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
     fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
@@ -24,13 +24,15 @@ int ycbcr_color_test()
     fread(inputImg, sizeof(unsigned char), size, inputFile);
 
     //********************
-    unsigned char* outputImg_Y = NULL, * outputImg_Cr = NULL, * outputImg_Cb = NULL;
+    unsigned char* outputImg_Y = NULL, * outputImg_Cr = NULL, * outputImg_Cb = NULL, * outputImg_R_Y_R = NULL;
     outputImg_Y = (unsigned char*)calloc(size, sizeof(unsigned char));
     outputImg_Cb = (unsigned char*)calloc(size, sizeof(unsigned char));
     outputImg_Cr = (unsigned char*)calloc(size, sizeof(unsigned char));
+    outputImg_R_Y_R = (unsigned char*)calloc(size, sizeof(unsigned char));
     //********************
 
-    double Y, Cb, Cr;
+    double Y, Cb, Cr, R, G, B;
+
     for (int j = 0; j < height; j++)
     {
         for (int i = 0; i < width; i++)
@@ -38,19 +40,42 @@ int ycbcr_color_test()
             //
             Y = 0.299 * inputImg[j * stride + 3 * i + 2] + 0.587 * inputImg[j * stride + 3 * i + 1] + 0.114 * inputImg[j * stride + 3 * i + 0];
             Cb = -0.169 * inputImg[j * stride + 3 * i + 2] - 0.331 * inputImg[j * stride + 3 * i + 1] + 0.500 * inputImg[j * stride + 3 * i + 0];
-            Cr = 0.500 * inputImg[j * stride + 3 * i + 2] - 0.419 * inputImg[j * stride + 3 * i + 1] -0.0613 * inputImg[j * stride + 3 * i + 0];
+            Cr = 0.500 * inputImg[j * stride + 3 * i + 2] - 0.419 * inputImg[j * stride + 3 * i + 1] - 0.0813 * inputImg[j * stride + 3 * i + 0];
+
+            // ¹à±â º¯°æ
+            Y += 20;
+
+            Y < 0 ? (Y = 0) : (Y > 255 ? Y = 255 : Y);
+            Cb < 0 ? (Cb = 0) : (Cb > 255 ? Cb = 255 : Cb);
+            Cr < 0 ? (Cr = 0) : (Cr > 255 ? Cr = 255 : Cr);
+
             //
-            outputImg_Y[j * stride + 3 * i + 0] = (int)Y;
-            outputImg_Y[j * stride + 3 * i + 1] = (int)Y;
-            outputImg_Y[j * stride + 3 * i + 2] = (int)Y;
 
-            outputImg_Cb[j * stride + 3 * i + 0] = (int)Cb;
-            outputImg_Cb[j * stride + 3 * i + 1] = (int)Cb;
-            outputImg_Cb[j * stride + 3 * i + 2] = (int)Cb;
+            outputImg_Y[j * stride + 3 * i + 0] = (unsigned char)Y;
+            outputImg_Y[j * stride + 3 * i + 1] = (unsigned char)Y;
+            outputImg_Y[j * stride + 3 * i + 2] = (unsigned char)Y;
 
-            outputImg_Cr[j * stride + 3 * i + 0] = (int)Cr;
-            outputImg_Cr[j * stride + 3 * i + 1] = (int)Cr;
-            outputImg_Cr[j * stride + 3 * i + 2] = (int)Cr;
+            outputImg_Cb[j * stride + 3 * i + 1] = (unsigned char)Cb;
+            outputImg_Cb[j * stride + 3 * i + 2] = (unsigned char)Cb;
+            outputImg_Cb[j * stride + 3 * i + 0] = (unsigned char)Cb;
+
+            outputImg_Cr[j * stride + 3 * i + 0] = (unsigned char)Cr;
+            outputImg_Cr[j * stride + 3 * i + 1] = (unsigned char)Cr;
+            outputImg_Cr[j * stride + 3 * i + 2] = (unsigned char)Cr;
+
+            //
+            R = Y + 1.475 * Cr;
+            G = Y - 0.571 * Cr - 0.165 * Cb;
+            B = Y + 1.881 * Cb;
+
+            R < 0 ? (R = 0) : (R > 255 ? R = 255 : R);
+            G < 0 ? (G = 0) : (G > 255 ? G = 255 : G);
+            B < 0 ? (B = 0) : (B > 255 ? B = 255 : B);
+            //
+
+            outputImg_R_Y_R[j * stride + 3 * i + 0] = (unsigned char)B;
+            outputImg_R_Y_R[j * stride + 3 * i + 1] = (unsigned char)G;
+            outputImg_R_Y_R[j * stride + 3 * i + 2] = (unsigned char)R;
         }
     }
 
@@ -69,6 +94,14 @@ int ycbcr_color_test()
     fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile_Cr);
     fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile_Cr);
     fwrite(outputImg_Cr, sizeof(unsigned char), size, outputFile_Cr);
+
+    FILE* outputFile_R_Y_R = fopen("./image/Output_R_Y_R.bmp", "wb");
+    fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile_R_Y_R);
+    fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile_R_Y_R);
+    fwrite(outputImg_R_Y_R, sizeof(unsigned char), size, outputFile_R_Y_R);
+
+    free(outputImg_R_Y_R);
+    fclose(outputFile_R_Y_R);
 
     free(outputImg_Cr);
     fclose(outputFile_Cr);

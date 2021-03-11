@@ -1,5 +1,10 @@
 #include "header.h"
 
+FILE* open_image(FILE* inputFile)
+{
+    return inputFile = fopen("./image/AICenter.bmp", "rb");
+}
+
 int main()
 {
     // 사진에 대한 정보를 헤더에서 뽑아와서 사용한다.
@@ -10,7 +15,7 @@ int main()
     FILE* inputFile = NULL;
 
     // "rb" : 읽기모드
-    inputFile = fopen("./image/AICenter.bmp", "rb");
+    inputFile = open_image(inputFile);
 
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
     fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
@@ -66,8 +71,11 @@ int main()
     fclose(inputFile);
     fclose(outputFile);
 
+    ////
+
     rgb_color_test();
     ycbcr_color_test();
 
+    ////
     return 0;
 }

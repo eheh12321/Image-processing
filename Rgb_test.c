@@ -8,7 +8,7 @@ int rgb_color_test()
 
     FILE* inputFile = NULL;
 
-    inputFile = fopen("./image/AICenter.bmp", "rb");
+    inputFile = open_image(inputFile);
 
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
     fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
