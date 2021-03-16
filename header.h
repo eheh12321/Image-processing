@@ -13,3 +13,6 @@ FILE* open_image();
 
 int rgb_color_test();
 int ycbcr_color_test();
+void HSI();
+void YI_diff();
+void watermark();

@@ -45,7 +45,7 @@ int ycbcr_color_test()
 
             // ####¹à±â º¯°æ####
 
-            Y_save += 5;
+            Y_save += 0;
 
             Y_save < 0 ? (Y = 0) : (Y_save > 255 ? Y = 255 : (Y = Y_save));
             Cb_save < 0 ? (Cb = 0) : (Cb_save > 255 ? Cb = 255 : (Cb = Cb_save));

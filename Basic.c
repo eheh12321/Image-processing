@@ -3,7 +3,7 @@
 FILE* open_image()
 {
     FILE* inputFile = NULL;
-    return inputFile = fopen("./image/original/IU_2.bmp", "rb");
+    return inputFile = fopen("./image/original/AICenter.bmp", "rb");
 }
 
 int main()
@@ -75,6 +75,7 @@ int main()
     ycbcr_color_test();
     HSI();
     YI_diff();
+    watermark();
 
     ////
 
