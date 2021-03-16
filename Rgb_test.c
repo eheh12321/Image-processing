@@ -4,7 +4,7 @@
 int rgb_color_test()
 {
     FILE* inputFile = NULL;
-    inputFile = open_image(inputFile);
+    inputFile = open_image();
 
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
     fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);

@@ -1,8 +1,9 @@
 #include "header.h"
 
-FILE* open_image(FILE* inputFile)
+FILE* open_image()
 {
-    return inputFile = fopen("./image/original/AICenter.bmp", "rb");
+    FILE* inputFile = NULL;
+    return inputFile = fopen("./image/original/IU_2.bmp", "rb");
 }
 
 int main()
@@ -11,7 +12,7 @@ int main()
     FILE* inputFile = NULL;
 
     // "rb" : 읽기모드
-    inputFile = open_image(inputFile);
+    inputFile = open_image();
 
     // 필수!!!!!!!!!!!!!!!!!! 절대 빼먹지 마시오
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
@@ -72,6 +73,8 @@ int main()
 
     rgb_color_test();
     ycbcr_color_test();
+    HSI();
+    YI_diff();
 
     ////
 

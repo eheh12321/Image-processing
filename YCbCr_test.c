@@ -5,7 +5,7 @@ int ycbcr_color_test()
 {
 
     FILE* inputFile = NULL;
-    inputFile = open_image(inputFile);
+    inputFile = open_image();
 
     int width = bmpInfo.biWidth;
     int height = bmpInfo.biHeight;
@@ -43,9 +43,9 @@ int ycbcr_color_test()
             Cb_save = -0.169 * inputImg[j * stride + 3 * i + 2] - 0.331 * inputImg[j * stride + 3 * i + 1] + 0.500 * inputImg[j * stride + 3 * i + 0];
             Cr_save = 0.500 * inputImg[j * stride + 3 * i + 2] - 0.419 * inputImg[j * stride + 3 * i + 1] - 0.0813 * inputImg[j * stride + 3 * i + 0];
 
-            // ¹à±â º¯°æ
+            // ####¹à±â º¯°æ####
 
-            Y_save += 10;
+            Y_save += 5;
 
             Y_save < 0 ? (Y = 0) : (Y_save > 255 ? Y = 255 : (Y = Y_save));
             Cb_save < 0 ? (Cb = 0) : (Cb_save > 255 ? Cb = 255 : (Cb = Cb_save));
@@ -57,9 +57,9 @@ int ycbcr_color_test()
             outputImg_Y[j * stride + 3 * i + 1] = (unsigned char)Y;
             outputImg_Y[j * stride + 3 * i + 2] = (unsigned char)Y;
 
+            outputImg_Cb[j * stride + 3 * i + 0] = (unsigned char)Cb;
             outputImg_Cb[j * stride + 3 * i + 1] = (unsigned char)Cb;
             outputImg_Cb[j * stride + 3 * i + 2] = (unsigned char)Cb;
-            outputImg_Cb[j * stride + 3 * i + 0] = (unsigned char)Cb;
 
             outputImg_Cr[j * stride + 3 * i + 0] = (unsigned char)Cr;
             outputImg_Cr[j * stride + 3 * i + 1] = (unsigned char)Cr;
