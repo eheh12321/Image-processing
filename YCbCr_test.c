@@ -16,6 +16,7 @@ int ycbcr_color_test()
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
     fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
 
+
     unsigned char* inputImg = NULL;
     inputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
     fread(inputImg, sizeof(unsigned char), size, inputFile);
@@ -28,23 +29,27 @@ int ycbcr_color_test()
     outputImg_R_Y_R = (unsigned char*)calloc(size, sizeof(unsigned char));
     //********************
 
+    // _save가 있는 이유 -> 변환과정을 거치면서 0보다 작거나 255보다 큰 경우 값이 짤려버려서
+    // Y로 변환 후에 다시 RGB로 변환을 하게 되면 손실이 발생하게 됨. 따라서 이후 변환시에 0~255 커팅 전 값을 사용하기 위해 _save에 미리 저장.
     double Y, Cb, Cr, R, G, B;
+    double Y_save, Cb_save, Cr_save;
 
     for (int j = 0; j < height; j++)
     {
         for (int i = 0; i < width; i++)
         {
             //
-            Y = 0.299 * inputImg[j * stride + 3 * i + 2] + 0.587 * inputImg[j * stride + 3 * i + 1] + 0.114 * inputImg[j * stride + 3 * i + 0];
-            Cb = -0.169 * inputImg[j * stride + 3 * i + 2] - 0.331 * inputImg[j * stride + 3 * i + 1] + 0.500 * inputImg[j * stride + 3 * i + 0];
-            Cr = 0.500 * inputImg[j * stride + 3 * i + 2] - 0.419 * inputImg[j * stride + 3 * i + 1] - 0.0813 * inputImg[j * stride + 3 * i + 0];
+            Y_save = 0.299 * inputImg[j * stride + 3 * i + 2] + 0.587 * inputImg[j * stride + 3 * i + 1] + 0.114 * inputImg[j * stride + 3 * i + 0];
+            Cb_save = -0.169 * inputImg[j * stride + 3 * i + 2] - 0.331 * inputImg[j * stride + 3 * i + 1] + 0.500 * inputImg[j * stride + 3 * i + 0];
+            Cr_save = 0.500 * inputImg[j * stride + 3 * i + 2] - 0.419 * inputImg[j * stride + 3 * i + 1] - 0.0813 * inputImg[j * stride + 3 * i + 0];
 
             // 밝기 변경
-            Y += 20;
 
-            Y < 0 ? (Y = 0) : (Y > 255 ? Y = 255 : Y);
-            Cb < 0 ? (Cb = 0) : (Cb > 255 ? Cb = 255 : Cb);
-            Cr < 0 ? (Cr = 0) : (Cr > 255 ? Cr = 255 : Cr);
+            Y_save += 10;
+
+            Y_save < 0 ? (Y = 0) : (Y_save > 255 ? Y = 255 : (Y = Y_save));
+            Cb_save < 0 ? (Cb = 0) : (Cb_save > 255 ? Cb = 255 : (Cb = Cb_save));
+            Cr_save < 0 ? (Cr = 0) : (Cr_save > 255 ? Cr = 255 : (Cr = Cr_save));
 
             //
 
@@ -61,6 +66,10 @@ int ycbcr_color_test()
             outputImg_Cr[j * stride + 3 * i + 2] = (unsigned char)Cr;
 
             //
+            Y = Y_save;
+            Cr = Cr_save;
+            Cb = Cb_save;
+
             R = Y + 1.475 * Cr;
             G = Y - 0.571 * Cr - 0.165 * Cb;
             B = Y + 1.881 * Cb;

@@ -2,7 +2,7 @@
 
 FILE* open_image(FILE* inputFile)
 {
-    return inputFile = fopen("./image/original/IU_2.bmp", "rb");
+    return inputFile = fopen("./image/original/AICenter.bmp", "rb");
 }
 
 int main()
@@ -13,6 +13,7 @@ int main()
     // "rb" : 읽기모드
     inputFile = open_image(inputFile);
 
+    // 필수!!!!!!!!!!!!!!!!!! 절대 빼먹지 마시오
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
     fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
 
@@ -73,5 +74,6 @@ int main()
     ycbcr_color_test();
 
     ////
+
     return 0;
 }
