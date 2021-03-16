@@ -54,7 +54,7 @@ void watermark()
         }
     }
 
-    FILE* outputFile_w = fopen("./image/Output_w.bmp", "wb");
+    FILE* outputFile_w = fopen("./image/Output_W.bmp", "wb");
     fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile_w);
     fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile_w);
     fwrite(outputImg_w, sizeof(unsigned char), size, outputFile_w);

@@ -11,8 +11,9 @@ BITMAPINFOHEADER bmpInfo;
 
 FILE* open_image();
 
-int rgb_color_test();
-int ycbcr_color_test();
+void rgb_color_test();
+void ycbcr_color_test();
 void HSI();
 void YI_diff();
 void watermark();
+void filtering();

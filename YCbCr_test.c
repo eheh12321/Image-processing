@@ -1,7 +1,7 @@
 #pragma once
 #include "header.h"
 
-int ycbcr_color_test()
+void ycbcr_color_test()
 {
 
     FILE* inputFile = NULL;
@@ -121,6 +121,4 @@ int ycbcr_color_test()
 
     free(inputImg);
     fclose(inputFile);
-
-    return 0;
 }

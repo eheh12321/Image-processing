@@ -76,6 +76,7 @@ int main()
     HSI();
     YI_diff();
     watermark();
+    filtering();
 
     ////
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "header.h"
 
-int rgb_color_test()
+void rgb_color_test()
 {
     FILE* inputFile = NULL;
     inputFile = open_image();
@@ -113,5 +113,4 @@ int rgb_color_test()
     free(inputImg);
     fclose(inputFile);
 
-    return 0;
 }
