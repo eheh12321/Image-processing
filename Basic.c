@@ -3,7 +3,7 @@
 FILE* open_image()
 {
     FILE* inputFile = NULL;
-    return inputFile = fopen("./image/original/AICenter.bmp", "rb");
+    return inputFile = fopen("./image/original/IU_2.bmp", "rb");
 }
 
 int main()
@@ -77,8 +77,12 @@ int main()
     YI_diff();
     watermark();
     filtering();
-    PSNR();
-
+    random_noise_generate();
+    sp_noise_generate();
+    printf("\nSalt-Pepper Noise\n");
+    PSNR("./image/Output_SPnoise.bmp");
+    printf("\nRandom Noise\n");
+    PSNR("./image/Output_Rnoise.bmp");
     ////
 
     return 0;

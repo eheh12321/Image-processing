@@ -1,14 +1,14 @@
 #pragma once
 #include "header.h"
 
-void PSNR()
+void PSNR(char* address)
 {
     // YCbCr의 Y값으로 서로 비교함.
     FILE* inputFile2 = NULL;
     inputFile2 = fopen("./image/Output_Y.bmp", "rb");
 
     FILE* inputFile = NULL;
-    inputFile = fopen("./image/original/AICenter_Noise.bmp", "rb");
+    inputFile = fopen(address, "rb");
 
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
     fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
