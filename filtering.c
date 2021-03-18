@@ -4,7 +4,7 @@
 void filtering()
 {
     FILE* inputFile = NULL;
-    inputFile = open_image();
+    inputFile = fopen("./image/Output_Y.bmp", "rb");
 
     FILE* inputFile2 = NULL;
     inputFile2 = fopen("./image/original/FilteringMask2.bmp", "rb");

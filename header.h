@@ -17,3 +17,4 @@ void HSI();
 void YI_diff();
 void watermark();
 void filtering();
+void PSNR();

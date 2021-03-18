@@ -77,6 +77,7 @@ int main()
     YI_diff();
     watermark();
     filtering();
+    PSNR();
 
     ////
 
