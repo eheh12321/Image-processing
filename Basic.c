@@ -87,10 +87,18 @@ int main()
     printf("\nRandom Noise\n");
     PSNR("./image/Output_Rnoise.bmp");
 
+    // 1. Median filter로 saltpapper noise를 제거한다
+    median_filter();
+
+    printf("\nMedian Filter\n");
+    PSNR("./image/Output_Median_Filter.bmp");
+
+    // 2. 그 다음에 mean filter를 돌려서 noise를 한번 더 제거한다
     mean_filter();
 
-    printf("\nMean Filter\n");
-    PSNR("./image/17011753_이도형.bmp");
+    printf("\nMedian_Mean Filter\n");
+    PSNR("./image/Output_Mean_Filter.bmp");
+
     ////
 
     return 0;
