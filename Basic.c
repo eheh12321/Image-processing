@@ -3,7 +3,7 @@
 FILE* open_image()
 {
     FILE* inputFile = NULL;
-    return inputFile = fopen("./image/original/IU_2.bmp", "rb");
+    return inputFile = fopen("./image/original/AICenter.bmp", "rb");
 }
 
 int main()
@@ -22,7 +22,7 @@ int main()
     int width = bmpInfo.biWidth;
     int height = bmpInfo.biHeight;
 
-    // 일반적으로 가로 x 세로 (x 3 : R,G,B)
+    // 가로 x 세로 x 3 (R,G,B)                 ###### 중요 (size = height * width * 3) ######
     int size = bmpInfo.biSizeImage;
 
     // bit-depth : RGB 파일이므로 8bit * 3 = 24 => 한 픽셀당 24bit.
@@ -35,7 +35,7 @@ int main()
     // 4byte 배수로 맞춰놓고, processing 할때는 width 만큼만 반복.
     // 파일의 가로크기를 4의 배수로 맞춰주는 작업.
     // + 3을 하는 이유 => 올림을 하기 위해
-    int stride = (((bitCnt / 8) * width) + 3) / 4 * 4;
+    int stride = (((bitCnt / 8) * width) + 3) / 4 * 4;      // ####### 중요 (width * 3) ######
     
     printf("W (가로) : %d(%d)\nH (세로) : %d\nS (크기) : %d\nD (bit-depth) : %d\n", width, stride, height, size, bitCnt);
 
@@ -71,18 +71,26 @@ int main()
 
     ////
 
+    PSNR("./image/original/AICenterY_CombinedNoise.bmp");
     rgb_color_test();
     ycbcr_color_test();
     HSI();
     YI_diff();
     watermark();
-    filtering();
+    masking();
     random_noise_generate();
     sp_noise_generate();
+
     printf("\nSalt-Pepper Noise\n");
     PSNR("./image/Output_SPnoise.bmp");
+
     printf("\nRandom Noise\n");
     PSNR("./image/Output_Rnoise.bmp");
+
+    median_filter();
+
+    printf("\nMedian Filter\n");
+    PSNR("./image/17011753_이도형.bmp");
     ////
 
     return 0;

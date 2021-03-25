@@ -4,8 +4,8 @@
 void PSNR(char* address)
 {
     // YCbCr의 Y값으로 서로 비교함.
-    FILE* inputFile2 = NULL;
-    inputFile2 = fopen("./image/Output_Y.bmp", "rb");
+    FILE* Original_input = NULL;
+    Original_input = fopen("./image/Output_Y.bmp", "rb");
 
     FILE* inputFile = NULL;
     inputFile = fopen(address, "rb");
@@ -13,8 +13,8 @@ void PSNR(char* address)
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
     fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
 
-    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile2);
-    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile2);
+    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, Original_input);
+    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, Original_input);
 
     int width = bmpInfo.biWidth;
     int height = bmpInfo.biHeight;
@@ -26,9 +26,9 @@ void PSNR(char* address)
     inputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
     fread(inputImg, sizeof(unsigned char), size, inputFile);
 
-    unsigned char* inputImg2 = NULL;
-    inputImg2 = (unsigned char*)calloc(size, sizeof(unsigned char));
-    fread(inputImg2, sizeof(unsigned char), size, inputFile2);
+    unsigned char* Original_Img = NULL;
+    Original_Img = (unsigned char*)calloc(size, sizeof(unsigned char));
+    fread(Original_Img, sizeof(unsigned char), size, Original_input);
 
     // 배열 복사
     unsigned char* Y1 = NULL;
@@ -44,7 +44,7 @@ void PSNR(char* address)
         for (int i = 0; i < width; i++)
         {
            // R G B 중 아무거나. (어짜피 다 똑같은 Y값이니까)
-           Y2[j * width + i] = inputImg2[j * stride + 3 * i + 0];
+           Y2[j * width + i] = Original_Img[j * stride + 3 * i + 0];
            Y1[j * width + i] = inputImg[j * stride + 3 * i + 0];
         }
     }    
@@ -64,6 +64,6 @@ void PSNR(char* address)
     free(inputImg);
     fclose(inputFile);
 
-    free(inputImg2);
-    fclose(inputFile2);
+    free(Original_Img);
+    fclose(Original_input);
 }

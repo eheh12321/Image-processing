@@ -1,7 +1,7 @@
 #pragma once
 #include "header.h"
 
-void filtering()
+void masking()
 {
     FILE* inputFile = NULL;
     inputFile = fopen("./image/Output_Y.bmp", "rb");
@@ -53,7 +53,7 @@ void filtering()
         }
     }
 
-    FILE* outputFile_F = fopen("./image/Output_F.bmp", "wb");
+    FILE* outputFile_F = fopen("./image/Output_M.bmp", "wb");
     fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile_F);
     fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile_F);
     fwrite(outputImg_F, sizeof(unsigned char), size, outputFile_F);
@@ -148,7 +148,7 @@ void sp_noise_generate()
     {
         for (int i = 0; i < width; i++)
         {
-            filter = rand() % 30;
+            filter = rand() % 10;
 
             if (filter == 0)
             {
@@ -172,6 +172,196 @@ void sp_noise_generate()
     }
 
     FILE* outputFile = fopen("./image/Output_SPnoise.bmp", "wb");
+    fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
+    fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
+    fwrite(outputImg, sizeof(unsigned char), size, outputFile);
+
+    free(outputImg);
+    fclose(outputFile);
+
+    free(inputImg);
+    fclose(inputFile);
+
+}
+
+int compare(const void* first, const void* second)
+{
+    double *a = (double*)first;
+    double *b = (double*)second;
+
+    if (*a < *b)
+        return -1;
+    else
+        return 1;
+}
+
+void median_filter()
+{
+    FILE* inputFile = NULL;
+    inputFile = fopen("./image/original/AICenterY_CombinedNoise.bmp", "rb");
+
+    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
+    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
+
+    int width = bmpInfo.biWidth;
+    int height = bmpInfo.biHeight;
+    int size = bmpInfo.biSizeImage; // height * width * 3 (R,G,B) !!!
+    int bitCnt = bmpInfo.biBitCount;
+    int stride = (((bitCnt / 8) * width) + 3) / 4 * 4; // (width * 3) >> 한 픽셀에 R,G,B 3개 값을 넣기 위해 3배로 늘림 
+
+    unsigned char* inputImg = NULL;
+    inputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+    fread(inputImg, sizeof(unsigned char), size, inputFile);
+
+    unsigned char* outputImg = NULL;
+    outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+
+    // Y 배열은 R,G,B 가 아니라 Y 하나만 취급하기 때문에 size / 3.
+    // >>>> inputImg, outputImg 의 크기와 Y 의 크기가 다르다 !!!!!!!!!!!!!! <<<<
+    unsigned char* Y = NULL;
+    Y = (unsigned char*)calloc(size / 3, sizeof(unsigned char));
+
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            // Luminance 파일을 input으로 받았기 때문에 R, G, B 모두 Y값을 갖고 있음. 셋중 아무거나 골라서 Y배열에 넣음.
+            Y[j * width + i] = inputImg[j * stride + 3 * i + 0];
+        }
+    }
+
+    for (int j = 0; j < 50; j++)
+    {
+        for (int i = 0; i < 50; i++)
+        {
+            printf("%3d ", Y[j * width + i]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");    
+    for (int j = 480; j < height; j++)
+    {
+        for (int i = 480; i < width; i++)
+        {
+            printf("%3d ", Y[j * width + i]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+
+    // padding의 width와 Y의 width 길이는 다르다!
+    int psize = 1;
+    int pheight = height + (2 * psize);
+    int pwidth = width + (2 * psize);
+
+    int filter[3][3] = { 0 };
+    int fsum = 0;
+    int fsize = 3;
+
+    unsigned char* padding = NULL;
+    // 위아래로 psize칸 패딩
+    padding = (unsigned char*)calloc(pheight * pwidth, sizeof(unsigned char));
+
+    
+    for (int j = 0; j < pheight; j++)
+    {
+        for (int i = 0; i < pwidth; i++)
+        {
+            padding[j * pwidth + i] = 180;
+        }
+    }
+
+    for (int i = 0; i < width; i++)
+    {
+        padding[i + psize] = Y[i];
+    }
+ 
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            padding[(j + psize) * pwidth + (i + psize)] = Y[j * width + i];
+        }
+    }
+
+    for (int j = 0; j < 50; j++)
+    {
+        for (int i = 0; i < 50; i++)
+        {
+            printf("%3d ", padding[j * pwidth + i]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+
+    for (int j = 480; j < pheight; j++)
+    {
+        for (int i = 480; i < pwidth; i++)
+        {
+            printf("%3d ", padding[j * pwidth + i]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+
+    for (int j = 0; j <= (pheight - fsize); j++)
+    {
+        for (int i = 0; i <= (pwidth - fsize); i++)
+        {
+            fsum = 0;
+            for (int y = 0; y < fsize; y++)
+            {
+                for (int x = 0; x < fsize; x++)
+                {
+                    filter[y][x] = (int)padding[(j + y) * pwidth + (i + x)];
+                    fsum += filter[y][x];
+                }
+            }
+            fsum /= (fsize * fsize);
+
+            padding[(j + 1) * pwidth + (i + 1)] = (unsigned char)fsum;
+        }
+    }
+
+    for (int j = 0; j < 50; j++)
+    {
+        for (int i = 0; i < 50; i++)
+        {
+            printf("%3d ", padding[j * pwidth + i]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+    
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            Y[j * width + i] = padding[(j + psize) * pwidth + (i + psize)];
+        }
+    }
+
+    for (int j = 0; j < 50; j++)
+    {
+        for (int i = 0; i < 50; i++)
+        {
+            printf("%3d ", Y[j * width + i]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            outputImg[j * stride + i * 3 + 0] = Y[j * width + i];
+            outputImg[j * stride + i * 3 + 1] = Y[j * width + i];
+            outputImg[j * stride + i * 3 + 2] = Y[j * width + i];
+        }
+    }
+
+    FILE* outputFile = fopen("./image/17011753_이도형.bmp", "wb");
     fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
     fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
     fwrite(outputImg, sizeof(unsigned char), size, outputFile);
