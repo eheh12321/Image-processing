@@ -21,4 +21,4 @@ void masking();
 void PSNR(char* address);
 void random_noise_generate();
 void sp_noise_generate();
-void median_filter();
+void mean_filter();

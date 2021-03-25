@@ -87,9 +87,9 @@ int main()
     printf("\nRandom Noise\n");
     PSNR("./image/Output_Rnoise.bmp");
 
-    median_filter();
+    mean_filter();
 
-    printf("\nMedian Filter\n");
+    printf("\nMean Filter\n");
     PSNR("./image/17011753_ÀÌµµÇü.bmp");
     ////
 

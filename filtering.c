@@ -195,7 +195,7 @@ int compare(const void* first, const void* second)
         return 1;
 }
 
-void median_filter()
+void mean_filter()
 {
     FILE* inputFile = NULL;
     inputFile = fopen("./image/original/AICenterY_CombinedNoise.bmp", "rb");
@@ -230,24 +230,24 @@ void median_filter()
         }
     }
 
-    for (int j = 0; j < 50; j++)
-    {
-        for (int i = 0; i < 50; i++)
-        {
-            printf("%3d ", Y[j * width + i]);
-        }
-        printf("\n");
-    }
-    printf("\n\n");    
-    for (int j = 480; j < height; j++)
-    {
-        for (int i = 480; i < width; i++)
-        {
-            printf("%3d ", Y[j * width + i]);
-        }
-        printf("\n");
-    }
-    printf("\n\n");
+    //for (int j = 0; j < 50; j++)
+    //{
+    //    for (int i = 0; i < 50; i++)
+    //    {
+    //        printf("%3d ", Y[j * width + i]);
+    //    }
+    //    printf("\n");
+    //}
+    //printf("\n\n");    
+    //for (int j = 480; j < height; j++)
+    //{
+    //    for (int i = 480; i < width; i++)
+    //    {
+    //        printf("%3d ", Y[j * width + i]);
+    //    }
+    //    printf("\n");
+    //}
+    //printf("\n\n");
 
     // padding의 width와 Y의 width 길이는 다르다!
     int psize = 1;
@@ -262,20 +262,20 @@ void median_filter()
     // 위아래로 psize칸 패딩
     padding = (unsigned char*)calloc(pheight * pwidth, sizeof(unsigned char));
 
-    
-    for (int j = 0; j < pheight; j++)
-    {
-        for (int i = 0; i < pwidth; i++)
-        {
-            padding[j * pwidth + i] = 180;
-        }
-    }
-
+    // padding 위아래 채우기
     for (int i = 0; i < width; i++)
     {
         padding[i + psize] = Y[i];
+        padding[((pheight - 1) * pwidth) + (i + psize)] = Y[(height - 1) * width + i];
     }
- 
+    
+    // padding 양옆 채우기
+    for (int j = 0; j < height; j++)
+    {
+        padding[(j + psize) * pwidth] = Y[j * width];
+        padding[(j + psize) * pwidth + (pwidth - 1)] = Y[j * width + (width - 1)];
+    }
+
     for (int j = 0; j < height; j++)
     {
         for (int i = 0; i < width; i++)
@@ -284,25 +284,25 @@ void median_filter()
         }
     }
 
-    for (int j = 0; j < 50; j++)
-    {
-        for (int i = 0; i < 50; i++)
-        {
-            printf("%3d ", padding[j * pwidth + i]);
-        }
-        printf("\n");
-    }
-    printf("\n\n");
+    //for (int j = 0; j < 50; j++)
+    //{
+    //    for (int i = 0; i < 50; i++)
+    //    {
+    //        printf("%3d ", padding[j * pwidth + i]);
+    //    }
+    //    printf("\n");
+    //}
+    //printf("\n\n");
 
-    for (int j = 480; j < pheight; j++)
-    {
-        for (int i = 480; i < pwidth; i++)
-        {
-            printf("%3d ", padding[j * pwidth + i]);
-        }
-        printf("\n");
-    }
-    printf("\n\n");
+    //for (int j = 480; j < pheight; j++)
+    //{
+    //    for (int i = 480; i < pwidth; i++)
+    //    {
+    //        printf("%3d ", padding[j * pwidth + i]);
+    //    }
+    //    printf("\n");
+    //}
+    //printf("\n\n");
 
     for (int j = 0; j <= (pheight - fsize); j++)
     {
@@ -323,7 +323,7 @@ void median_filter()
         }
     }
 
-    for (int j = 0; j < 50; j++)
+   /* for (int j = 0; j < 50; j++)
     {
         for (int i = 0; i < 50; i++)
         {
@@ -331,7 +331,7 @@ void median_filter()
         }
         printf("\n");
     }
-    printf("\n\n");
+    printf("\n\n");*/
     
     for (int j = 0; j < height; j++)
     {
@@ -341,7 +341,7 @@ void median_filter()
         }
     }
 
-    for (int j = 0; j < 50; j++)
+  /*  for (int j = 0; j < 50; j++)
     {
         for (int i = 0; i < 50; i++)
         {
@@ -349,7 +349,7 @@ void median_filter()
         }
         printf("\n");
     }
-    printf("\n\n");
+    printf("\n\n");*/
 
     for (int j = 0; j < height; j++)
     {
