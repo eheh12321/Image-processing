@@ -313,12 +313,13 @@ void mean_filter()
             {
                 for (int x = 0; x < fsize; x++)
                 {
-                    filter[y][x] = (int)padding[(j + y) * pwidth + (i + x)];
-                    fsum += filter[y][x];
+                    //filter[y][x] = (int)padding[(j + y) * pwidth + (i + x)];
+                    fsum += (int)padding[(j + y) * pwidth + (i + x)];
                 }
             }
             fsum /= (fsize * fsize);
 
+            
             padding[(j + 1) * pwidth + (i + 1)] = (unsigned char)fsum;
         }
     }
@@ -462,7 +463,7 @@ void median_filter()
             }
             qsort(filter, fsize * fsize, sizeof(filter[0]), compare);
 
-            if (filter[0] == 0 || filter[(fsize * fsize) - 1] == 255)
+            if (padding[(j + 1) * pwidth + (i + 1)] == 0 || padding[(j + 1) * pwidth + (i + 1)] == 255)
             {
                 cnt = filter[fmid];
                 padding[(j + 1) * pwidth + (i + 1)] = (unsigned char)cnt;
