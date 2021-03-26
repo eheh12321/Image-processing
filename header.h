@@ -23,3 +23,4 @@ void random_noise_generate();
 void sp_noise_generate();
 void mean_filter();
 void median_filter();
+void gau_filter();

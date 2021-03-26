@@ -94,10 +94,16 @@ int main()
     PSNR("./image/Output_Median_Filter.bmp");
 
     // 2. 그 다음에 mean filter를 돌려서 noise를 한번 더 제거한다
+
     mean_filter();
 
     printf("\nMedian_Mean Filter\n");
     PSNR("./image/Output_Mean_Filter.bmp");
+
+    gau_filter();
+
+    printf("\nGau Filter\n");
+    PSNR("./image/Output_gau_Filter.bmp");
 
     ////
 
