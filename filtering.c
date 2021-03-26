@@ -195,10 +195,10 @@ int compare(const void* first, const void* second)
         return 1;
 }
 
-void mean_filter()
+void mean_filter(char* address)
 {
     FILE* inputFile = NULL;
-    inputFile = fopen("./image/Output_Median_Filter.bmp", "rb");
+    inputFile = fopen(address, "rb");
 
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
     fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
@@ -378,10 +378,10 @@ void mean_filter()
 
 }
 
-void median_filter()
+void median_filter(char* address)
 {
     FILE* inputFile = NULL;
-    inputFile = fopen("./image/original/AICenterY_CombinedNoise.bmp", "rb");
+    inputFile = fopen(address, "rb");
 
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
     fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
@@ -508,10 +508,10 @@ void median_filter()
 
 }
 
-void gau_filter()
+void gau_filter(char* address)
 {
     FILE* inputFile = NULL;
-    inputFile = fopen("./image/original/AICenterY_CombinedNoise.bmp", "rb");
+    inputFile = fopen(address, "rb");
 
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
     fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);

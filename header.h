@@ -9,8 +9,16 @@
 BITMAPFILEHEADER bmpFile;
 BITMAPINFOHEADER bmpInfo;
 
-
 FILE* open_image();
+
+// ************
+
+void PSNR(char* address);
+void mean_filter(char* address);
+void median_filter(char* address);
+void gau_filter(char* address);
+
+// ************
 
 void rgb_color_test();
 void ycbcr_color_test();
@@ -18,9 +26,7 @@ void HSI();
 void YI_diff();
 void watermark();
 void masking();
-void PSNR(char* address);
 void random_noise_generate();
 void sp_noise_generate();
-void mean_filter();
-void median_filter();
-void gau_filter();
+
+// *************
