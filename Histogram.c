@@ -73,8 +73,58 @@ void histogram(char* address)
         }
     }
 
-
     FILE* outputFile = fopen("./image/Output_histogram.bmp", "wb");
+    fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
+    fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
+    fwrite(outputImg, sizeof(unsigned char), size, outputFile);
+
+    free(outputImg);
+    fclose(outputFile);
+
+    free(inputImg);
+    fclose(inputFile);
+}
+
+void threshold(char* address)
+{
+    FILE* inputFile = NULL;
+    inputFile = fopen(address, "rb");
+
+    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
+    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
+
+    int width = bmpInfo.biWidth;
+    int height = bmpInfo.biHeight;
+    int size = bmpInfo.biSizeImage; // height * width * 3 (R,G,B) !!!
+    int bitCnt = bmpInfo.biBitCount;
+    int stride = (((bitCnt / 8) * width) + 3) / 4 * 4; // (width * 3) >> 한 픽셀에 R,G,B 3개 값을 넣기 위해 3배로 늘림 
+
+    unsigned char* inputImg = NULL;
+    inputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+    fread(inputImg, sizeof(unsigned char), size, inputFile);
+
+    unsigned char* outputImg = NULL;
+    outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+
+    int value;
+
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            value = inputImg[j * stride + 3 * i + 0];
+
+            // Threshold 값 설정 (if 문으로 처리..)
+            if (value > 200 || value < 150)
+            {
+                outputImg[j * stride + 3 * i + 0] = value;
+                outputImg[j * stride + 3 * i + 1] = value;
+                outputImg[j * stride + 3 * i + 2] = value;
+            }
+        }
+    }
+
+    FILE* outputFile = fopen("./image/Output_Threshold.bmp", "wb");
     fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
     fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
     fwrite(outputImg, sizeof(unsigned char), size, outputFile);

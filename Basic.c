@@ -45,6 +45,7 @@ int main()
    //  *************************************************************
 
     histogram("./image/Output_Y.bmp");
+    threshold("./image/Output_Y.bmp");
 
     return 0;
 }

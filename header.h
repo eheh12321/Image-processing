@@ -32,3 +32,4 @@ void sp_noise_generate();
 // *************
 
 void histogram(char* address);
+void threshold(char* address);
