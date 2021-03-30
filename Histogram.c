@@ -53,16 +53,6 @@ void histogram(char* address)
         }
     }
 
-    for (int i = 0; i < 512; i++)
-    {
-        printf("[%d : %d]\n", i, Ylist[i]);
-
-        if (max < Ylist[i])
-        {
-            max = Ylist[i];
-        }
-    }
-
     for (int i = 0; i < width; i++)
     {
         for (int j = 0; j < Ylist[i]; j++)
@@ -125,6 +115,70 @@ void threshold(char* address)
     }
 
     FILE* outputFile = fopen("./image/Output_Threshold.bmp", "wb");
+    fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
+    fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
+    fwrite(outputImg, sizeof(unsigned char), size, outputFile);
+
+    free(outputImg);
+    fclose(outputFile);
+
+    free(inputImg);
+    fclose(inputFile);
+}
+
+void stretch_histogram(char* address)
+{
+    FILE* inputFile = NULL;
+    inputFile = fopen(address, "rb");
+
+    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
+    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
+
+    int width = bmpInfo.biWidth;
+    int height = bmpInfo.biHeight;
+    int size = bmpInfo.biSizeImage; // height * width * 3 (R,G,B) !!!
+    int bitCnt = bmpInfo.biBitCount;
+    int stride = (((bitCnt / 8) * width) + 3) / 4 * 4; // (width * 3) >> 한 픽셀에 R,G,B 3개 값을 넣기 위해 3배로 늘림 
+
+    unsigned char* inputImg = NULL;
+    inputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+    fread(inputImg, sizeof(unsigned char), size, inputFile);
+
+    unsigned char* outputImg = NULL;
+    outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+
+    unsigned char* Y1 = NULL;
+    Y1 = (unsigned char*)calloc(size / 3, sizeof(unsigned char));
+
+    int Hist[256] = { 0 };
+    int sumHist[256] = { 0 };
+
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            Y1[j * width + i] = inputImg[j * stride + 3 * i + 0];
+            Hist[Y1[j * width + i]] += 1;
+        }
+    }
+
+    sumHist[0] = Hist[0];
+    for (int i = 1; i < 255; i++)
+    {
+        sumHist[i] = sumHist[i - 1] + Hist[i];
+    }
+    
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            outputImg[j * stride + 3 * i + 0] = 255 * sumHist[Y1[j * width + i]] / (width * height);
+            outputImg[j * stride + 3 * i + 1] = 255 * sumHist[Y1[j * width + i]] / (width * height);
+            outputImg[j * stride + 3 * i + 2] = 255 * sumHist[Y1[j * width + i]] / (width * height);
+        }
+    }
+   
+    FILE* outputFile = fopen("./image/Output_Stretched_histogram.bmp", "wb");
     fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
     fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
     fwrite(outputImg, sizeof(unsigned char), size, outputFile);

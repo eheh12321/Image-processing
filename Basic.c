@@ -3,7 +3,7 @@
 FILE* open_image()
 {
     FILE* inputFile = NULL;
-    return inputFile = fopen("./image/original/IU_2.bmp", "rb");
+    return inputFile = fopen("./image/original/AICenter.bmp", "rb");
 }
 
 int main()
@@ -46,6 +46,9 @@ int main()
 
     histogram("./image/Output_Y.bmp");
     threshold("./image/Output_Y.bmp");
+    stretch_histogram("./image/Output_Y.bmp");
+    histogram("./image/Output_Stretched_histogram.bmp");
 
+    printf("\nProcessing Complete!\n");
     return 0;
 }
