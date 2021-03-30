@@ -3,13 +3,11 @@
 FILE* open_image()
 {
     FILE* inputFile = NULL;
-    return inputFile = fopen("./image/original/AICenter.bmp", "rb");
+    return inputFile = fopen("./image/original/IU_2.bmp", "rb");
 }
 
 int main()
 {
-    PSNR("./image/original/AICenterY_CombinedNoise.bmp");
-
     rgb_color_test();
     ycbcr_color_test();
     HSI();
@@ -19,29 +17,34 @@ int main()
     random_noise_generate();
     sp_noise_generate();
 
-    printf("\nSalt-Pepper Noise\n");
-    PSNR("./image/Output_SPnoise.bmp");
-
-    printf("\nRandom Noise\n");
-    PSNR("./image/Output_Rnoise.bmp");
+    //  *************************************************************
 
     // 1. Median filter로 saltpapper noise를 제거한다
-    median_filter("./image/original/AICenterY_CombinedNoise.bmp");
+    median_filter("./image/Output_SPnoise.bmp");
 
-    printf("\nMedian Filter\n");
+    printf("\n# Median Filter\n");
     PSNR("./image/Output_Median_Filter.bmp");
+
+    mean_filter("./image/Output_SPnoise.bmp");
+
+    printf("\n# Mean Filter\n");
+    PSNR("./image/Output_Mean_Filter.bmp");
 
     // 2. 그 다음에 mean filter를 돌려서 noise를 한번 더 제거한다
 
     mean_filter("./image/Output_Median_Filter.bmp");
 
-    printf("\nMedian_Mean Filter\n");
+    printf("\n# Median_Mean Filter\n");
     PSNR("./image/Output_Mean_Filter.bmp");
 
     gau_filter("./image/Output_Median_Filter.bmp");
 
     printf("\nGau Filter\n");
     PSNR("./image/Output_gau_Filter.bmp");
+
+   //  *************************************************************
+
+    histogram("./image/Output_Y.bmp");
 
     return 0;
 }

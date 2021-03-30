@@ -30,3 +30,5 @@ void random_noise_generate();
 void sp_noise_generate();
 
 // *************
+
+void histogram(char* address);
