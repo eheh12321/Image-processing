@@ -31,6 +31,11 @@ void sp_noise_generate();
 
 // *************
 
-void histogram(char* address);
+void histogram(char* address, char* output);
+void ns_histogram(char* address, char* output);
 void threshold(char* address);
 void stretch_histogram(char* address);
+
+// *************
+
+void gamma_encoding(char* address, char* output, double gamma);

@@ -1,6 +1,7 @@
 #include "header.h"
 
-void histogram(char* address)
+// x축을 512로 stretch
+void histogram(char* address, char* output)
 {
     FILE* inputFile = NULL;
     inputFile = fopen(address, "rb");
@@ -31,7 +32,6 @@ void histogram(char* address)
             outputImg[j * stride + 3 * i + 1] = (unsigned char)255;
             outputImg[j * stride + 3 * i + 2] = (unsigned char)255;
 
-            // Luminance 파일을 input으로 받았기 때문에 R, G, B 모두 Y값을 갖고 있음. 셋중 아무거나 골라서 Y배열에 넣음.
             value = (int)inputImg[j * stride + 3 * i + 0];
 
             value *= 2;
@@ -49,9 +49,10 @@ void histogram(char* address)
 
         for (int i = 0; i < 512; i++)
         {
-            Ylist[i] /= (value + 1);
+            Ylist[i] /= (value * 3);
         }
     }
+
 
     for (int i = 0; i < width; i++)
     {
@@ -63,7 +64,84 @@ void histogram(char* address)
         }
     }
 
-    FILE* outputFile = fopen("./image/Output_histogram.bmp", "wb");
+    FILE* outputFile = fopen(output, "wb");
+    fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
+    fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
+    fwrite(outputImg, sizeof(unsigned char), size, outputFile);
+
+    free(outputImg);
+    fclose(outputFile);
+
+    free(inputImg);
+    fclose(inputFile);
+}
+
+// x축 stretch 안함
+void ns_histogram(char* address, char* output)
+{
+    FILE* inputFile = NULL;
+    inputFile = fopen(address, "rb");
+
+    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
+    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
+
+    int width = bmpInfo.biWidth;
+    int height = bmpInfo.biHeight;
+    int size = bmpInfo.biSizeImage; // height * width * 3 (R,G,B) !!!
+    int bitCnt = bmpInfo.biBitCount;
+    int stride = (((bitCnt / 8) * width) + 3) / 4 * 4; // (width * 3) >> 한 픽셀에 R,G,B 3개 값을 넣기 위해 3배로 늘림 
+
+    unsigned char* inputImg = NULL;
+    inputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+    fread(inputImg, sizeof(unsigned char), size, inputFile);
+
+    unsigned char* outputImg = NULL;
+    outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+
+    int Ylist[256] = { 0 }, value, max = 0;
+    int len = sizeof(Ylist) / sizeof(Ylist[0]);
+
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            outputImg[j * stride + 3 * i + 0] = (unsigned char)255;
+            outputImg[j * stride + 3 * i + 1] = (unsigned char)255;
+            outputImg[j * stride + 3 * i + 2] = (unsigned char)255;
+
+            value = (int)inputImg[j * stride + 3 * i + 0];
+
+            Ylist[value] += 1;
+
+            max < Ylist[value] ? (max = Ylist[value]) : (max);
+        }
+    }
+
+    if (max >= 512)
+    {
+        value = max / 512;
+
+        for (int i = 0; i < 255; i++)
+        {
+            Ylist[i] /= (value * 3);
+        }
+    }
+
+    // ****************** histogram sliding **************
+    // 대단해 보이는데 사실 그냥 Ylist 요소의 값을 각각 밀어주기만 한 것 ==> 각 셀의 Y에 k값 더하기만 한것;;; :P
+    int k = 200;
+
+    for (int i = 0; i < len; i++)
+    {
+        for (int j = 0; j < Ylist[i]; j++)
+        {
+            outputImg[j * stride + 3 * (i + k) + 0] = (unsigned char)0;
+            outputImg[j * stride + 3 * (i + k) + 1] = (unsigned char)0;
+            outputImg[j * stride + 3 * (i + k) + 2] = (unsigned char)0;
+        }
+    }
+
+    FILE* outputFile = fopen(output, "wb");
     fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
     fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
     fwrite(outputImg, sizeof(unsigned char), size, outputFile);
@@ -96,7 +174,7 @@ void threshold(char* address)
     unsigned char* outputImg = NULL;
     outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
 
-    int value;
+    unsigned char value;
 
     for (int j = 0; j < height; j++)
     {
@@ -104,8 +182,13 @@ void threshold(char* address)
         {
             value = inputImg[j * stride + 3 * i + 0];
 
-            // Threshold 값 설정 (if 문으로 처리..)
-            if (value > 200 || value < 150)
+            // *****************************************************
+            //                      Threshold
+            //
+            //  value값을 조절해서 보여주고싶은 부분만 추출..(이외 0)
+            // *****************************************************
+
+            if (value > 100)
             {
                 outputImg[j * stride + 3 * i + 0] = value;
                 outputImg[j * stride + 3 * i + 1] = value;
@@ -162,6 +245,7 @@ void stretch_histogram(char* address)
         }
     }
 
+    // Cumulative Histogram (누적 히스토그램)
     sumHist[0] = Hist[0];
     for (int i = 1; i < 255; i++)
     {
@@ -172,9 +256,9 @@ void stretch_histogram(char* address)
     {
         for (int i = 0; i < width; i++)
         {
-            outputImg[j * stride + 3 * i + 0] = 255 * sumHist[Y1[j * width + i]] / (width * height);
-            outputImg[j * stride + 3 * i + 1] = 255 * sumHist[Y1[j * width + i]] / (width * height);
-            outputImg[j * stride + 3 * i + 2] = 255 * sumHist[Y1[j * width + i]] / (width * height);
+            outputImg[j * stride + 3 * i + 0] = (unsigned char)255 * sumHist[Y1[j * width + i]] / (width * height);
+            outputImg[j * stride + 3 * i + 1] = (unsigned char)255 * sumHist[Y1[j * width + i]] / (width * height);
+            outputImg[j * stride + 3 * i + 2] = (unsigned char)255 * sumHist[Y1[j * width + i]] / (width * height);
         }
     }
    

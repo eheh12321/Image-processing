@@ -44,11 +44,22 @@ int main()
 
    //  *************************************************************
 
-    histogram("./image/Output_Y.bmp");
+    histogram("./image/Output_Y.bmp", "./image/Output_histogram.bmp");
+    ns_histogram("./image/Output_Y.bmp", "./image/Output_ns_histogram.bmp");
     threshold("./image/Output_Y.bmp");
+
     stretch_histogram("./image/Output_Y.bmp");
-    histogram("./image/Output_Stretched_histogram.bmp");
+    histogram("./image/Output_Stretched_histogram.bmp", "./image/Output_histogram_s.bmp");
+
+    // ***************************************************************
+
+    gamma_encoding("./image/Output_Y.bmp", "./image/Output_gamma_encoding.bmp", 2.5);
+    gamma_encoding("./image/Output_gamma_encoding.bmp", "./image/Output_gamma_encoding_2.bmp", 0.4);
+
+    printf("\nGamma correction\n"); // (Gamma correction을 한다고 원본이 되지는 않음)
+    PSNR("./image/Output_gamma_encoding_2.bmp");
 
     printf("\nProcessing Complete!\n");
+
     return 0;
 }
