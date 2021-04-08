@@ -59,6 +59,11 @@ int main()
     printf("\nGamma correction\n"); // (Gamma correction을 한다고 원본이 되지는 않음)
     PSNR("./image/Output_gamma_encoding_2.bmp");
 
+    // ****************************************************************
+
+    down_sampling_sub("./image/Output_Y.bmp", "./image/Output_dsampling.bmp");
+    down_sampling_avg("./image/Output_Y.bmp", "./image/Output_dsampling_a.bmp");
+
     printf("\nProcessing Complete!\n");
 
     return 0;

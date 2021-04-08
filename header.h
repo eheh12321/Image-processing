@@ -39,3 +39,8 @@ void stretch_histogram(char* address);
 // *************
 
 void gamma_encoding(char* address, char* output, double gamma);
+
+// *************
+
+void down_sampling_sub(char* address, char* output);
+void down_sampling_avg(char* address, char* output);
