@@ -61,8 +61,13 @@ int main()
 
     // ****************************************************************
 
-    down_sampling_sub("./image/Output_Y.bmp", "./image/Output_dsampling.bmp");
-    down_sampling_avg("./image/Output_Y.bmp", "./image/Output_dsampling_a.bmp");
+    down_sampling_sub("./image/Output_Y.bmp", "./image/Output_Dsampling.bmp");
+    down_sampling_avg("./image/Output_Y.bmp", "./image/Output_Dsampling_a.bmp");
+
+    up_sampling_nearest("./image/Output_Dsampling_a.bmp", "./image/Output_Usampling_n.bmp");
+
+    printf("\nUpsampling after Downsampling\n");
+    PSNR("./image/Output_Usampling_n.bmp");
 
     printf("\nProcessing Complete!\n");
 
