@@ -59,7 +59,7 @@ void PSNR(char* address)
 
     mse /= (width * height);
     psnr = mse != 0.0 ? (10.0 * log10(255 * 255 / mse)) : 99.99;
-    printf("MSE = %.2lf\nPSNR = %.2lf dB\n", mse, psnr);
+    printf(" MSE = %.2lf\n PSNR = %.2lf dB\n", mse, psnr);
 
     free(inputImg);
     fclose(inputFile);

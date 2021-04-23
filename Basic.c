@@ -3,7 +3,7 @@
 FILE* open_image()
 {
     FILE* inputFile = NULL;
-    return inputFile = fopen("./image/original/AICenter.bmp", "rb");
+    return inputFile = fopen("./image/original/GateY.bmp", "rb");
 }
 
 int main()
@@ -61,8 +61,8 @@ int main()
 
     // ****************************************************************
 
-    down_sampling_sub("./image/Output_Y.bmp", "./image/Output_Dsampling.bmp", 1);
-    down_sampling_avg("./image/Output_Y.bmp", "./image/Output_Dsampling_a.bmp", 1);
+    down_sampling_sub("./image/Output_Y.bmp", "./image/Output_Dsampling.bmp", 2);
+    down_sampling_avg("./image/Output_Y.bmp", "./image/Output_Dsampling_a.bmp", 2);
 
     up_sampling_nearest("./image/original/AICenterY_Subsampling.bmp", "./image/Output_Usampling_n.bmp", 1);
     printf("\nUpsampling after Downsampling\n");
@@ -78,8 +78,8 @@ int main()
     printf("\nNEAREST UPSCAILING\n");
     PSNR("./image/Output_Usampling_n.bmp");
 
-    midterm_test("./image/original/AICenterY_128X128.bmp", "./image/midterm.bmp", 2, 4);
-    printf("\nTEST\n");
+    upsampling_midterm("./image/original/GateY_128X128.bmp", "./image/midterm.bmp", 2, 4);
+    printf("\nRESULT\n");
     PSNR("./image/midterm.bmp");
 
     printf("\nProcessing Complete!\n");

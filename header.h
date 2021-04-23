@@ -49,4 +49,4 @@ void up_sampling_biint(char* address, char* output, int ratio);
 
 //
 
-void midterm_test(char* address, char* output, int ratio, int psize);
+void upsampling_midterm(char* address, char* output, int ratio, int psize);

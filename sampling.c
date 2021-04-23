@@ -361,57 +361,56 @@ void up_sampling_biint(char* address, char* output, int ratio)
     free(Y2);
 }
 
-void midterm_test(char* address, char* output, int ratio, int psize)
+void upsampling_midterm(char* address, char* output, int ratio, int psize)
 {
-    FILE* inputFile = NULL;
-    inputFile = fopen(address, "rb");
+    FILE* inputFile = NULL; // 원본 파일을 받을 포인터 변수
+    inputFile = fopen(address, "rb"); // 원본 파일을 파라미터로 받아와서 엽니다.
 
-    // 128x128 file 
-    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
-    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
+    // #### 128x128 file (원본)
+    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile); // 원본파일의 fileHeader를 가져와 bmpFile에 저장
+    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile); // 원본파일의 infoHeader를 가져와 bmpInfo에 저장
 
-    int width = bmpInfo.biWidth; 
-    int height = bmpInfo.biHeight;
+    int width = bmpInfo.biWidth; // 가로 길이
+    int height = bmpInfo.biHeight; // 세로 길이
     int size = bmpInfo.biSizeImage; // size = width * height * 3
-    int bitCnt = bmpInfo.biBitCount;
-    int stride = (((bitCnt / 8) * width) + 3) / 4 * 4;
+    int bitCnt = bmpInfo.biBitCount; // 8bit 영상
+    int stride = (((bitCnt / 8) * width) + 3) / 4 * 4; // width를 4의 배수로 떨어지게 세팅
 
-    // ****************
+    // #### 512x512 file (upsampling)
+    int width2 = bmpInfo.biWidth << ratio; // 시프트 연산을 이용하였습니다. << 는 2를 곱하는 효과가 있습니다.
+    int height2 = bmpInfo.biHeight << ratio; // ratio=2이므로 4를 곱한것과 같음
+    int stride2 = (((bitCnt / 8) * width2) + 3) / 4 * 4; // width2를 4의 배수로 떨어지게 세팅
+    int size2 = stride2 * height2; // stride2(가로) * height2(세로) = size
 
-    // 512x512 file
-    int width2 = bmpInfo.biWidth << ratio;
-    int height2 = bmpInfo.biHeight << ratio;
-    int stride2 = (((bitCnt / 8) * width2) + 3) / 4 * 4;
-    int size2 = stride2 * height2; // width(=> stride) * height * 3
-
-    // ****************
-
+    // 원본 파일을 담을 inputImg 포인터 변수
     unsigned char* inputImg = NULL;
-    inputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
-    fread(inputImg, sizeof(unsigned char), size, inputFile);
+    inputImg = (unsigned char*)calloc(size, sizeof(unsigned char)); // 원본은 128x128 파일
+    fread(inputImg, sizeof(unsigned char), size, inputFile); // 파일을 읽어들입니다.
 
-    // ****************
-
+    // inputImg에서 Y값만 추출해서 담아낼 Y1 포인터 변수
     unsigned char* Y1 = NULL;
-    Y1 = (unsigned char*)calloc(size / 3, sizeof(unsigned char));
+    Y1 = (unsigned char*)calloc(size / 3, sizeof(unsigned char)); // R,G,B 중 하나만 뽑아오면 되므로 size / 3 의 크기만 필요
 
+    // Y1에서 upsampling된 깂을 담을 Y2 포인터 변수 
     unsigned char* Y2 = NULL;
-    Y2 = (unsigned char*)calloc(size2 / 3, sizeof(unsigned char));
+    Y2 = (unsigned char*)calloc(size2 / 3, sizeof(unsigned char)); // R,G,B 중 하나만 뽑아오면 되므로 size2 / 3 의 크기만 필요
 
+    // 출력 파일을 위한 outputImg 포인터 변수
     unsigned char* outputImg = NULL;
-    outputImg = (unsigned char*)calloc(size2, sizeof(unsigned char));
+    outputImg = (unsigned char*)calloc(size2, sizeof(unsigned char)); // 512x512 파일
 
+    // inputImg에서 Y값을 뽑아 Y1 배열에 저장하는 과정
     for (int j = 0; j < height; j++)
     {
         for (int i = 0; i < width; i++)
         {
-            Y1[j * width + i] = inputImg[j * stride + 3 * i + 0];
+            Y1[j * width + i] = inputImg[j * stride + 3 * i + 0]; // R G B 중 하나만 뽑아서 저장합니다.
         }
     }
 
     // *****************************************************************************************************************************
     //
-    //                                                   Y1 패딩 (n-tap filter적용)
+    //                                               Y1 배열에 패딩을 씌우는 과정
     //
     // *****************************************************************************************************************************
 
@@ -459,141 +458,154 @@ void midterm_test(char* address, char* output, int ratio, int psize)
 
     // *****************************************************************************************************************************
     //
-    //                                                        업스케일링
+    //                                                         Upsampling
     //
     // *****************************************************************************************************************************
 
-    double ntapfilterh[3] = { 0.3333, 0.3333, 0.3333 };
-    double ntapfilter[4] = { -0.0625, 0.5625, 0.5625, -0.0625 };
+    double ntapfilter[4] = { -0.0625, 0.5625, 0.5625, -0.0625 }; // 기본 4-tap filter
+    double ntapfilterh[3] = { 0.3333, 0.3333, 0.3333 }; // 양방향을 모두 고려하기 위해서 추가한 필터. 가중치는 없습니다.
 
-    int fsize = 4;
-    double value = 0;
-    double value2 = 0;
+    int fsize = 4; // 필터 길이
+    double value = 0; // ntapfilter 계산용
+    double value2 = 0; // ntapfilterh 계산용 
 
     for (int j = 0; j < height; j++)
     {
         for (int i = 0; i < width; i++)
         {
-            int pj = psize + j;
-            int pi = psize + i;
+            int pj = psize + j; // 패딩을 씌우고 난 이후 j 위치
+            int pi = psize + i; // 패딩을 씌우고 난 이후 i 위치
 
-            // 가로축 4탭필터
-            value = 0;
-            value2 = 0;
-            for (int k = 0; k < fsize; k++)
+            // ******* 가로방향 4-tap filter
+            value = 0; // 변수 초기화
+            value2 = 0; // 변수 초기화
+
+            for (int k = 0; k < fsize; k++) // 4-tap filter 계산과정
             {
                 value += (double)(padding[pj * pwidth + (pi - 1 + k)]) * ntapfilter[k];
             }
-            for (int k = 0; k < 3; k++)
+            for (int k = 0; k < 3; k++) // 세로방향의 값을 추가로 계산하는 과정
             {
                 value2 += (double)(padding[(pj - 1 + k) * pwidth + pi + 1]) * ntapfilterh[k];
                 value2 += (double)(padding[(pj - 1 + k) * pwidth + pi + 0]) * ntapfilterh[k];
             }
-            value = (value + (value2 / 2)) / 2;
-            value > 255 ? (value = 255) : value;
+            value = (value + (value2 / 2)) / 2; // value와 value2의 값을 평균을 내어 interpolation합니다.
+            value > 255 ? (value = 255) : value; // 255가 넘으면 255로 처리
 
-            // 4-tap interpolation
-            Y2[(j << ratio) * width2 + (i << ratio)] = padding[pj * pwidth + pi];
-            Y2[(j << ratio) * width2 + (i << ratio) + 2] = (unsigned char)value;
+            Y2[(j << ratio) * width2 + (i << ratio)] = padding[pj * pwidth + pi]; // (i, j) 위치에는 원본값을 그대로 넣습니다
+            Y2[(j << ratio) * width2 + (i << ratio) + 2] = (unsigned char)value; // (i, j+2) 위치에는 위에서 계산한 value 값을 넣습니다.
 
-            // 세로축 4탭필터
-            value = 0;
-            value2 = 0;
-            for (int k = 0; k < fsize; k++)
+            // ******* 세로방향 4-tap filter
+            value = 0; // 변수 초기화
+            value2 = 0; // 변수 초기화
+
+            for (int k = 0; k < fsize; k++) // 4-tap filter 계산과정
             {
                 value += (double)(padding[(pj - 1 + k) * pwidth + pi]) * ntapfilter[k];
             }
-            for (int k = 0; k < 3; k++)
+            for (int k = 0; k < 3; k++) // 가로방향의 값을 추가로 계산하는 과정
             {
                 value2 += (double)(padding[pj * pwidth + (pi - 1 + k)]) * ntapfilterh[k];
                 value2 += (double)(padding[(pj + 1) * pwidth + (pi - 1 + k)]) * ntapfilterh[k];
             }
-            value = (value + (value2 / 2)) / 2;
-            value > 255 ? (value = 255) : value;
-            Y2[((j << ratio) + 2) * width2 + (i << ratio)] = (unsigned char)value;
+            value = (value + (value2 / 2)) / 2; // value와 value2의 값을 평균을 내어 interpolation합니다.
+            value > 255 ? (value = 255) : value; // 255가 넘으면 255로 처리
 
+            Y2[((j << ratio) + 2) * width2 + (i << ratio)] = (unsigned char)value; // (i+2, j) 위치에 위에서 계산한 value 값을 넣습니다.
+            // (i+2, j+2)는 아래에서 따로 계산합니다
         }
     }
 
-    double a, b, c, d;
+    // 비어있는 (i+2, j+2) 계산하는 과정
+    double a, b, c, d, e, f, g, h;
     for (int j = 0; j < height; j++)
     {
         for (int i = 0; i < width; i++)
         {
-            if (j >= height - 1) // 마지막줄 처리
+            if (j >= height - 1) // 세로방향 마지막줄 예외처리
             {
-                Y2[((j << ratio) + 2) * width2 + (i << ratio) + 2] = Y2[((j << ratio) + 0) * width2 + (i << ratio) + 2];
+                Y2[((j << ratio) + 2) * width2 + (i << ratio) + 2] = Y2[((j << ratio) + 0) * width2 + (i << ratio) + 2]; // (i+2, j)에 있는 값을 (i+2, j+2)에 단순히 복사합니다.
                 continue;
             }
-            if (i >= width - 1) // 끝부분 처리
+            if (i >= width - 1) // 가로방향 끝부분 예외처리
             {
-                Y2[((j << ratio) + 2) * width2 + (i << ratio) + 2] = Y2[((j << ratio) + 2) * width2 + (i << ratio) + 0];
+                Y2[((j << ratio) + 2) * width2 + (i << ratio) + 2] = Y2[((j << ratio) + 2) * width2 + (i << ratio) + 0]; // (i, j+2)에 있는 값을 (i+2, j+2)에 단순히 복사합니다.
                 continue;
             }
-            a  = (double)Y2[((j << ratio) + 0) * width2 + (i << ratio) + 0];
-            b  = (double)Y2[((j << ratio) + 0) * width2 + (i << ratio) + 4];
-            c  = (double)Y2[((j << ratio) + 4) * width2 + (i << ratio) + 0];
-            d  = (double)Y2[((j << ratio) + 4) * width2 + (i << ratio) + 4];
 
-            value = (a + b + c + d) / 4;
-            value > 255 ? (value = 255) : value;
+            // 원본 픽셀값
+            a = (double)Y2[((j << ratio) + 0) * width2 + (i << ratio) + 0];
+            b = (double)Y2[((j << ratio) + 0) * width2 + (i << ratio) + 4];
+            c = (double)Y2[((j << ratio) + 4) * width2 + (i << ratio) + 0];
+            d = (double)Y2[((j << ratio) + 4) * width2 + (i << ratio) + 4];
 
-            Y2[((j << ratio) + 2) * width2 + (i << ratio) + 2] = (unsigned char)value;
+            // 4-tap filter로 interpolation된 픽셀값
+            e = (double)Y2[((j << ratio) + 0) * width2 + (i << ratio) + 2];
+            f = (double)Y2[((j << ratio) + 2) * width2 + (i << ratio) + 0];
+            g = (double)Y2[((j << ratio) + 2) * width2 + (i << ratio) + 4];
+            h = (double)Y2[((j << ratio) + 4) * width2 + (i << ratio) + 2];
+
+            value = (a + b + c + d + e + f + g + h) / 8; // value는 둘레의 평균값입니다
+            value > 255 ? (value = 255) : value; // 255가 넘으면 255로 처리
+
+            Y2[((j << ratio) + 2) * width2 + (i << ratio) + 2] = (unsigned char)value; // (i+2, j+2) 위치에 value값 대입
         }
     }
 
-    // 가로축 binary filter
+    // ******* 가로축 binary filter
     for (int j = 0; j < height2; j++)
     {
-        for (int i = 0; i < width2 - 3; i+=2)
+        for (int i = 0; i < width2 - 3; i += 2)
         {
-            Y2[j * width2 + i + 1] = (Y2[j * width2 + i] + Y2[j * width2 + i + 2]) / 2;
+            Y2[j * width2 + i + 1] = (Y2[j * width2 + i] + Y2[j * width2 + i + 2]) / 2; // (i, j) 와 (i, j+2)의 평균을 (i, j+1)에 채워넣습니다.
         }
-        Y2[j * width2 + (width2 - 1)] = Y2[j * width2 + (width2 - 2)]; // 끝부분 처리
+        Y2[j * width2 + (width2 - 1)] = (unsigned char)(Y2[j * width2 + (width2 - 2)] * 0.5 + Y2[j * width2 + (width2 - 3)] * 0.5); // 끝부분 예외처리 (이전 두 값의 평균)
     }
-    
-    // 세로축 binary filter
-    for (int j = 0; j < height2; j+=2)
+
+    // ******* 세로축 binary filter
+    for (int j = 0; j < height2; j += 2)
     {
         for (int i = 0; i < width2; i++)
         {
-            if (j > height2 - 3) // 마지막줄 처리
+            if (j > height2 - 3) // 마지막줄 예외처리
             {
-                Y2[(j + 1) * width2 + i] = (unsigned char)(Y2[j * width2 + i] * 0.7 + Y2[(j - 1) * width2 + i] * 0.3);
+                Y2[(j + 1) * width2 + i] = (unsigned char)(Y2[j * width2 + i] * 0.5 + Y2[(j - 1) * width2 + i] * 0.5); // 이전 두 값의 평균으로 처리합니다
             }
             else
             {
-                Y2[(j + 1) * width2 + i] = (unsigned char)((Y2[j * width2 + i] + Y2[(j + 2) * width2 + i]) / 2);
+                Y2[(j + 1) * width2 + i] = (unsigned char)((Y2[j * width2 + i] + Y2[(j + 2) * width2 + i]) / 2); // (i, j)와 (i+2, j)의 평균을 (i+1, j)에 채워넣습니다.
             }
         }
     }
 
+    // upsampling이 끝난 Y2 배열을 출력하기 위해 outputImg로 옮겨담는 과정
     for (int j = 0; j < height2; j++)
     {
         for (int i = 0; i < width2; i++)
         {
-            outputImg[j * stride2 + 3 * i + 0] = Y2[j * width2 + i];
-            outputImg[j * stride2 + 3 * i + 1] = Y2[j * width2 + i];
-            outputImg[j * stride2 + 3 * i + 2] = Y2[j * width2 + i];
+            outputImg[j * stride2 + 3 * i + 0] = Y2[j * width2 + i]; // B
+            outputImg[j * stride2 + 3 * i + 1] = Y2[j * width2 + i]; // G
+            outputImg[j * stride2 + 3 * i + 2] = Y2[j * width2 + i]; // R
         }
     }
 
-    FILE* outputFile = fopen(output, "wb");
-    bmpInfo.biWidth = width2;
-    bmpInfo.biHeight = height2;
-    bmpInfo.biSizeImage = size2;
+    FILE* outputFile = fopen(output, "wb"); // 파일 출력을 위한 outputFile 파일포인터
+    bmpInfo.biWidth = width2; // 사전에 설정한 변수 값을 대입합니다
+    bmpInfo.biHeight = height2; // 사전에 설정한 변수 값을 대입합니다
+    bmpInfo.biSizeImage = size2; // 사전에 설정한 변수 값을 대입합니다
     bmpFile.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + size2;
-    fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
-    fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
-    fwrite(outputImg, sizeof(unsigned char), size2, outputFile);
 
-    free(inputImg);
-    fclose(inputFile);
+    fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile); // fileHeader 정보를 씁니다
+    fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile); // infoHeader 정보를 씁니다
+    fwrite(outputImg, sizeof(unsigned char), size2, outputFile); // 파일을 출력합니다
 
-    free(outputImg);
-    fclose(outputFile);
+    free(inputImg); // 동적할당 해제
+    fclose(inputFile); // 파일 닫기
 
-    free(Y1);
-    free(Y2);
-    free(padding);
+    free(outputImg); // 동적할당 해제
+    fclose(outputFile); // 파일 닫기
+
+    free(Y1); // 동적할당 해제
+    free(Y2); // 동적할당 해제
+    free(padding); // 동적할당 해제
 }
