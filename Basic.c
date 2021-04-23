@@ -72,6 +72,16 @@ int main()
     printf("\nUpsampling after Downsampling\n");
     PSNR("./image/Output_Usampling_b.bmp");
 
+    // ****************************************************************
+
+    up_sampling_nearest("./image/original/AICenterY_128X128.bmp", "./image/Output_Usampling_n.bmp", 2);
+    printf("\nNEAREST UPSCAILING\n");
+    PSNR("./image/Output_Usampling_n.bmp");
+
+    midterm_test("./image/original/AICenterY_128X128.bmp", "./image/midterm.bmp", 2, 4);
+    printf("\nTEST\n");
+    PSNR("./image/midterm.bmp");
+
     printf("\nProcessing Complete!\n");
 
     return 0;

@@ -46,3 +46,7 @@ void down_sampling_sub(char* address, char* output, int ratio);
 void down_sampling_avg(char* address, char* output, int ratio);
 void up_sampling_nearest(char* address, char* output, int ratio);
 void up_sampling_biint(char* address, char* output, int ratio);
+
+//
+
+void midterm_test(char* address, char* output, int ratio, int psize);

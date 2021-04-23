@@ -121,7 +121,7 @@ void ns_histogram(char* address, char* output)
     {
         value = max / 512;
 
-        for (int i = 0; i < 255; i++)
+        for (int i = 0; i < len; i++)
         {
             Ylist[i] /= (value * 3);
         }
