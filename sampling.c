@@ -127,7 +127,7 @@ void down_sampling_avg(char* address, char* output, int ratio)
     {
         for (int i = 0; i < width2; i++)
         {
-            Y2[j * width2 + i] = (unsigned char)((double)(Y1[(j << ratio) * width + (i << ratio)] + Y1[(j << ratio) * width + (i << ratio) + 1] + Y1[((j << ratio) + 1) * width + (i << ratio) + 0] + Y1[((j << ratio) + 1) * width +  (i << ratio) + 1]) / 4);
+            Y2[j * width2 + i] = (unsigned char)((Y1[(j << ratio) * width + (i << ratio)] + Y1[(j << ratio) * width + (i << ratio) + 1] + Y1[((j << ratio) + 1) * width + (i << ratio) + 0] + Y1[((j << ratio) + 1) * width +  (i << ratio) + 1]) / 4);
 
             outputImg[j * stride2 + 3 * i + 0] = Y2[j * width2 + i];
             outputImg[j * stride2 + 3 * i + 1] = Y2[j * width2 + i];
@@ -463,7 +463,7 @@ void upsampling_midterm(char* address, char* output, int ratio, int psize)
     // *****************************************************************************************************************************
 
     double ntapfilter[4] = { -0.0625, 0.5625, 0.5625, -0.0625 }; // 기본 4-tap filter
-    double ntapfilterh[3] = { 0.3333, 0.3333, 0.3333 }; // 양방향을 모두 고려하기 위해서 추가한 필터. 가중치는 없습니다.
+    double ntapfilterh[3] = { 0.25, 0.5, 0.25 }; // 양방향을 모두 고려하기 위해서 추가한 필터.
 
     int fsize = 4; // 필터 길이
     double value = 0; // ntapfilter 계산용
@@ -515,7 +515,6 @@ void upsampling_midterm(char* address, char* output, int ratio, int psize)
             // (i+2, j+2)는 아래에서 따로 계산합니다
         }
     }
-
     // 비어있는 (i+2, j+2) 계산하는 과정
     double a, b, c, d, e, f, g, h;
     for (int j = 0; j < height; j++)
@@ -551,7 +550,6 @@ void upsampling_midterm(char* address, char* output, int ratio, int psize)
             Y2[((j << ratio) + 2) * width2 + (i << ratio) + 2] = (unsigned char)value; // (i+2, j+2) 위치에 value값 대입
         }
     }
-
     // ******* 가로축 binary filter
     for (int j = 0; j < height2; j++)
     {
@@ -559,7 +557,7 @@ void upsampling_midterm(char* address, char* output, int ratio, int psize)
         {
             Y2[j * width2 + i + 1] = (Y2[j * width2 + i] + Y2[j * width2 + i + 2]) / 2; // (i, j) 와 (i, j+2)의 평균을 (i, j+1)에 채워넣습니다.
         }
-        Y2[j * width2 + (width2 - 1)] = (unsigned char)(Y2[j * width2 + (width2 - 2)] * 0.5 + Y2[j * width2 + (width2 - 3)] * 0.5); // 끝부분 예외처리 (이전 두 값의 평균)
+        Y2[j * width2 + (width2 - 1)] = (unsigned char)(Y2[j * width2 + (width2 - 2)] * 1.3 - Y2[j * width2 + (width2 - 3)] * 0.3);
     }
 
     // ******* 세로축 binary filter
@@ -569,7 +567,7 @@ void upsampling_midterm(char* address, char* output, int ratio, int psize)
         {
             if (j > height2 - 3) // 마지막줄 예외처리
             {
-                Y2[(j + 1) * width2 + i] = (unsigned char)(Y2[j * width2 + i] * 0.5 + Y2[(j - 1) * width2 + i] * 0.5); // 이전 두 값의 평균으로 처리합니다
+                Y2[(j + 1) * width2 + i] = (unsigned char)(Y2[j * width2 + i] * 1.3 - Y2[(j - 1) * width2 + i] * 0.3);
             }
             else
             {
