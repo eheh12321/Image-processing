@@ -468,6 +468,7 @@ void upsampling_midterm(char* address, char* output, int ratio, int psize)
     int fsize = 4; // 필터 길이
     double value = 0; // ntapfilter 계산용
     double value2 = 0; // ntapfilterh 계산용 
+    int rr = 1 << ratio; // ratio=2 -> rr=4, ratio=3 -> rr=8 등등등... ratio에 맞게 이동하기 위한 변수
 
     for (int j = 0; j < height; j++)
     {
@@ -475,8 +476,10 @@ void upsampling_midterm(char* address, char* output, int ratio, int psize)
         {
             int pj = psize + j; // 패딩을 씌우고 난 이후 j 위치
             int pi = psize + i; // 패딩을 씌우고 난 이후 i 위치
+            int ir = i << ratio; // ratio에 맞게 이동하기 위한 변수.. rr씩 이동합니다.
+            int jr = j << ratio; // ratio에 맞게 이동하기 위한 변수.. rr씩 이동합니다. 
 
-            // ******* 가로방향 4-tap filter
+            // ******* 가로방향 4-tap filter | (i, j)와 (i + rr, j) 사이 (i + (rr / 2), j) 삽입
             value = 0; // 변수 초기화
             value2 = 0; // 변수 초기화
 
@@ -492,10 +495,10 @@ void upsampling_midterm(char* address, char* output, int ratio, int psize)
             value = (value + (value2 / 2)) / 2; // value와 value2의 값을 평균을 내어 interpolation합니다.
             value > 255 ? (value = 255) : value; // 255가 넘으면 255로 처리
 
-            Y2[(j << ratio) * width2 + (i << ratio)] = padding[pj * pwidth + pi]; // (i, j) 위치에는 원본값을 그대로 넣습니다
-            Y2[(j << ratio) * width2 + (i << ratio) + 2] = (unsigned char)value; // (i, j+2) 위치에는 위에서 계산한 value 값을 넣습니다.
+            Y2[jr * width2 + ir] = padding[pj * pwidth + pi]; // (i, j) 위치에는 원본값을 그대로 넣습니다
+            Y2[jr * width2 + ir + rr / 2] = (unsigned char)value; // (i + (rr / 2), j) 위치에는 위에서 계산한 value 값을 넣습니다.
 
-            // ******* 세로방향 4-tap filter
+            // ******* 세로방향 4-tap filter | (i, j)와 (i, j+rr) 사이 (i, j + (rr / 2)) 삽입
             value = 0; // 변수 초기화
             value2 = 0; // 변수 초기화
 
@@ -511,68 +514,88 @@ void upsampling_midterm(char* address, char* output, int ratio, int psize)
             value = (value + (value2 / 2)) / 2; // value와 value2의 값을 평균을 내어 interpolation합니다.
             value > 255 ? (value = 255) : value; // 255가 넘으면 255로 처리
 
-            Y2[((j << ratio) + 2) * width2 + (i << ratio)] = (unsigned char)value; // (i+2, j) 위치에 위에서 계산한 value 값을 넣습니다.
-            // (i+2, j+2)는 아래에서 따로 계산합니다
+            Y2[(jr + rr / 2) * width2 + ir] = (unsigned char)value; // (i, j + (rr / 2)) 위치에 위에서 계산한 value 값을 넣습니다.
+            // (i + (rr / 2), j + (rr / 2))는 아래에서 따로 계산합니다
         }
     }
-    // 비어있는 (i+2, j+2) 계산하는 과정
+
+    // 비어있는 (i + (rr / 2), j + (rr / 2)) 계산하는 과정
     double a, b, c, d, e, f, g, h;
     for (int j = 0; j < height; j++)
     {
         for (int i = 0; i < width; i++)
         {
+            int ir = i << ratio; // ratio에 맞게 이동하기 위한 변수.. rr만큼 이동합니다
+            int jr = j << ratio; // ratio에 맞게 이동하기 위한 변수.. rr만큼 이동합니다
+
             if (j >= height - 1) // 세로방향 마지막줄 예외처리
             {
-                Y2[((j << ratio) + 2) * width2 + (i << ratio) + 2] = Y2[((j << ratio) + 0) * width2 + (i << ratio) + 2]; // (i+2, j)에 있는 값을 (i+2, j+2)에 단순히 복사합니다.
+                Y2[(jr + rr / 2) * width2 + ir + rr / 2] = Y2[jr * width2 + ir + rr / 2]; // 이전에 있는 값을 단순히 복사해 채워넣습니다.
                 continue;
             }
             if (i >= width - 1) // 가로방향 끝부분 예외처리
             {
-                Y2[((j << ratio) + 2) * width2 + (i << ratio) + 2] = Y2[((j << ratio) + 2) * width2 + (i << ratio) + 0]; // (i, j+2)에 있는 값을 (i+2, j+2)에 단순히 복사합니다.
+                Y2[(jr + rr / 2) * width2 + ir + rr / 2] = Y2[(jr + rr / 2) * width2 + ir]; // 이전에 있는 값을 단순히 복사해 채워넣습니다.
                 continue;
             }
 
             // 원본 픽셀값
-            a = (double)Y2[((j << ratio) + 0) * width2 + (i << ratio) + 0];
-            b = (double)Y2[((j << ratio) + 0) * width2 + (i << ratio) + 4];
-            c = (double)Y2[((j << ratio) + 4) * width2 + (i << ratio) + 0];
-            d = (double)Y2[((j << ratio) + 4) * width2 + (i << ratio) + 4];
+            a = (double)Y2[(jr + rr * 0) * width2 + ir + rr * 0];
+            b = (double)Y2[(jr + rr * 0) * width2 + ir + rr * 1];
+            c = (double)Y2[(jr + rr * 1) * width2 + ir + rr * 0];
+            d = (double)Y2[(jr + rr * 1) * width2 + ir + rr * 1];
 
             // 4-tap filter로 interpolation된 픽셀값
-            e = (double)Y2[((j << ratio) + 0) * width2 + (i << ratio) + 2];
-            f = (double)Y2[((j << ratio) + 2) * width2 + (i << ratio) + 0];
-            g = (double)Y2[((j << ratio) + 2) * width2 + (i << ratio) + 4];
-            h = (double)Y2[((j << ratio) + 4) * width2 + (i << ratio) + 2];
+            e = (double)Y2[jr * width2 + ir + (rr / 2)];
+            f = (double)Y2[(jr + (rr / 2)) * width2 + ir];
+            g = (double)Y2[(jr + (rr / 2)) * width2 + ir + rr];
+            h = (double)Y2[(jr + rr) * width2 + ir + (rr / 2)];
 
             value = (a + b + c + d + e + f + g + h) / 8; // value는 둘레의 평균값입니다
             value > 255 ? (value = 255) : value; // 255가 넘으면 255로 처리
 
-            Y2[((j << ratio) + 2) * width2 + (i << ratio) + 2] = (unsigned char)value; // (i+2, j+2) 위치에 value값 대입
+            Y2[(jr + rr / 2) * width2 + ir + rr / 2] = (unsigned char)value; // (i + (rr / 2), j + (rr / 2)) 위치에 value값 대입
         }
-    }
-    // ******* 가로축 binary filter
-    for (int j = 0; j < height2; j++)
-    {
-        for (int i = 0; i < width2 - 3; i += 2)
-        {
-            Y2[j * width2 + i + 1] = (Y2[j * width2 + i] + Y2[j * width2 + i + 2]) / 2; // (i, j) 와 (i, j+2)의 평균을 (i, j+1)에 채워넣습니다.
-        }
-        Y2[j * width2 + (width2 - 1)] = (unsigned char)(Y2[j * width2 + (width2 - 2)] * 1.3 - Y2[j * width2 + (width2 - 3)] * 0.3);
     }
 
-    // ******* 세로축 binary filter
-    for (int j = 0; j < height2; j += 2)
+    // binary filter입니다. ratio에 맞게 반복하고 (rr / k)(=kr) 씩 이동하면서 사이에 평균을 구해 채워넣습니다.
+    for (int k = 2; k < rr; k = k << 1)
+    {
+        int kr = rr / k; // 반복문을 돌때마다 2씩 크기가 작아지면서 빈칸을 빠짐없이 채웁니다. (8, 4, 2, ...)
+
+        // ******* 가로축 binary filter | (i + kr, j)과 (i, j) 사이 (i + (kr / 2), j) 삽입
+        for (int j = 0; j < height2; j++)
+        {
+            for (int i = 0; i < width2 - rr / 2; i += kr) // 가로축 끝부분은 별도로 처리합니다
+            {
+                Y2[j * width2 + i + kr / 2] = (Y2[j * width2 + i] + Y2[j * width2 + i + kr]) / 2;
+            }      
+        }
+
+        // ******* 세로축 binary filter | (i, j + kr)과 (i, j) 사이 (i, j + (kr / 2)) 삽입
+        for (int j = 0; j < height2 - rr / 2; j += kr) // 세로축 마지막 줄은 별도로 처리합니다.
+        {
+            for (int i = 0; i < width2; i++) 
+            {
+                Y2[(j + kr / 2) * width2 + i] = (Y2[j * width2 + i] + Y2[(j + kr) * width2 + i]) / 2;
+            }
+        }
+    }
+
+    // 예외처리 파트(가로축)
+    for (int j = 0; j < height2 - rr / 2; j++)
+    {
+        for (int i = width2 - rr / 2; i < width2; i++)
+        {
+            Y2[j * width2 + i] = Y2[j * width2 + i - 1]; // 이전값을 그대로 복사합니다
+        }
+    }
+    // 예외처리 파트(세로축)
+    for (int j = height2 - rr / 2; j < height2; j++)
     {
         for (int i = 0; i < width2; i++)
         {
-            if (j > height2 - 3) // 마지막줄 예외처리
-            {
-                Y2[(j + 1) * width2 + i] = (unsigned char)(Y2[j * width2 + i] * 1.3 - Y2[(j - 1) * width2 + i] * 0.3);
-            }
-            else
-            {
-                Y2[(j + 1) * width2 + i] = (unsigned char)((Y2[j * width2 + i] + Y2[(j + 2) * width2 + i]) / 2); // (i, j)와 (i+2, j)의 평균을 (i+1, j)에 채워넣습니다.
-            }
+            Y2[j * width2 + i] = Y2[(j - 1) * width2 + i]; // 이전값을 그대로 복사합니다
         }
     }
 

@@ -3,7 +3,7 @@
 FILE* open_image()
 {
     FILE* inputFile = NULL;
-    return inputFile = fopen("./image/original/GateY.bmp", "rb");
+    return inputFile = fopen("./image/original/AICenter.bmp", "rb");
 }
 
 int main()
@@ -78,9 +78,13 @@ int main()
     printf("\nNEAREST UPSCAILING\n");
     PSNR("./image/Output_Usampling_n.bmp");
 
-    upsampling_midterm("./image/original/GateY_128X128.bmp", "./image/midterm.bmp", 2, 4);
+    upsampling_midterm("./image/original/AICenterY_128X128.bmp", "./image/midterm.bmp", 2, 4);
     printf("\nRESULT\n");
     PSNR("./image/midterm.bmp");
+
+    // ****************************************************************
+
+    edge("./image/original/AICenterY_Org.bmp");
 
     printf("\nProcessing Complete!\n");
 
