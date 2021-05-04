@@ -85,6 +85,8 @@ int main()
     // ****************************************************************
 
     edge("./image/original/AICenterY_Org.bmp");
+    compression("./image/original/AICenterY_Org.bmp");
+    decoding("A");
 
     printf("\nProcessing Complete!\n");
 
