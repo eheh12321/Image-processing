@@ -7,3 +7,4 @@
 - 210326 : Median filter, Mean filter, Gau filter 추가 및 Basic.c 깔끔하게 
 - 210330 : Histogram, Stretched_Histogram 
 - 210407 : Gamma correction, Gamma encoding
+- 210424 : 중간고사 Upsampling project 제출 (upsampling시 ratio 지정 가능하게끔)
