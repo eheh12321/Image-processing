@@ -51,5 +51,11 @@ void upsampling_midterm(char* address, char* output, int ratio, int psize);
 //
 
 void edge(char* address);
+void sobel_edge(char* address);
+void prewitt_edge(char* address);
+void edge_thresholding(char* address, int thr);
+
+//
+
 void compression(char* address);
 void decoding(char* address);

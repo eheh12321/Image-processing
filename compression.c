@@ -86,40 +86,32 @@ void decoding(char* address)
 
     fclose(fp);
 
-    for (int j = 0; j < height; j++)
-    {
-        for (int i = 0; i < width; i++)
-        {
-            Y[j * width + i] = (unsigned char)(Y[j * width + i] * 16);
-        }
-    }
+    //for (int j = 0; j < height; j++)
+    //{
+    //    for (int i = 0; i < width; i++)
+    //    {
+    //        Y[j * width + i] = (unsigned char)(Y[j * width + i] * 16);
+    //    }
+    //}
+    //unsigned char* outputImg = NULL;
+    //outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
 
-    for (int j = 0; j < 30; j++)
-    {
-        for (int i = 0; i < 30; i++)
-        {
-            printf("%3d ", Y[j * width + i]);
-        }
-    }
-    unsigned char* outputImg = NULL;
-    outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+    //for (int j = 0; j < height; j++)
+    //{
+    //    for (int i = 0; i < width; i++)
+    //    {
+    //        outputImg[j * stride + i * 3 + 0] = Y[j * width + i];
+    //        outputImg[j * stride + i * 3 + 1] = Y[j * width + i];
+    //        outputImg[j * stride + i * 3 + 2] = Y[j * width + i];
+    //    }
+    //}
 
-    for (int j = 0; j < height; j++)
-    {
-        for (int i = 0; i < width; i++)
-        {
-            outputImg[j * stride + i * 3 + 0] = Y[j * width + i];
-            outputImg[j * stride + i * 3 + 1] = Y[j * width + i];
-            outputImg[j * stride + i * 3 + 2] = Y[j * width + i];
-        }
-    }
+    //FILE* outputFile = fopen("./image/test.bmp", "wb");
+    //fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
+    //fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
+    //fwrite(outputImg, sizeof(unsigned char), size, outputFile);
 
-    FILE* outputFile = fopen("./image/test.bmp", "wb");
-    fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
-    fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
-    fwrite(outputImg, sizeof(unsigned char), size, outputFile);
-
-    fclose(outputFile);
-    free(outputImg);
-    free(Y);
+    //fclose(outputFile);
+    //free(outputImg);
+    //free(Y);
 }

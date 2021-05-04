@@ -85,10 +85,18 @@ int main()
     // ****************************************************************
 
     edge("./image/original/AICenterY_Org.bmp");
+    sobel_edge("./image/Output_Y.bmp");
+    prewitt_edge("./image/Output_Y.bmp");
+    edge_thresholding("./image/Output_sobel_Edge.bmp", 150);
+
+    printf("\n* Edge detection complete! *\n");
+
+    // ****************************************************************    
+    
     compression("./image/original/AICenterY_Org.bmp");
     decoding("A");
 
-    printf("\nProcessing Complete!\n");
+    printf("\n* Processing Complete! *\n");
 
     return 0;
 }
