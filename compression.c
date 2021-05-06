@@ -66,17 +66,23 @@ int convert(char* str)
 
 void decoding(char* address)
 {
-    int width = 512;
-    int height = 512;
-    int size = height * width * 3;
-    int bitCnt = 8;
+    FILE* inputFile = NULL;
+    inputFile = fopen("./image/original/AICenterY_Org.bmp", "rb");
+
+    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
+    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
+
+    int width = bmpInfo.biWidth;
+    int height = bmpInfo.biHeight;
+    int size = bmpInfo.biSizeImage;
+    int bitCnt = bmpInfo.biBitCount;
     int stride = (((bitCnt / 8) * width) + 3) / 4 * 4;
 
     unsigned char* Y = NULL;
     Y = (unsigned char*)calloc(size / 3, sizeof(unsigned char));
 
     char buffer[5];
-    FILE* fp = fopen("bitstream.txt", "r");
+    FILE* fp = fopen(address , "r");
     int n = 0;
     while (feof(fp) == 0)
     {
@@ -86,32 +92,31 @@ void decoding(char* address)
 
     fclose(fp);
 
-    //for (int j = 0; j < height; j++)
-    //{
-    //    for (int i = 0; i < width; i++)
-    //    {
-    //        Y[j * width + i] = (unsigned char)(Y[j * width + i] * 16);
-    //    }
-    //}
-    //unsigned char* outputImg = NULL;
-    //outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            Y[j * width + i] = (unsigned char)(Y[j * width + i] * 16);
+        }
+    }
+    unsigned char* outputImg = NULL;
+    outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
 
-    //for (int j = 0; j < height; j++)
-    //{
-    //    for (int i = 0; i < width; i++)
-    //    {
-    //        outputImg[j * stride + i * 3 + 0] = Y[j * width + i];
-    //        outputImg[j * stride + i * 3 + 1] = Y[j * width + i];
-    //        outputImg[j * stride + i * 3 + 2] = Y[j * width + i];
-    //    }
-    //}
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            outputImg[j * stride + i * 3 + 0] = Y[j * width + i];
+            outputImg[j * stride + i * 3 + 1] = Y[j * width + i];
+            outputImg[j * stride + i * 3 + 2] = Y[j * width + i];
+        }
+    }
 
-    //FILE* outputFile = fopen("./image/test.bmp", "wb");
-    //fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
-    //fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
-    //fwrite(outputImg, sizeof(unsigned char), size, outputFile);
+    FILE* outputFile = fopen("./image/decoding.bmp", "wb");
+    fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
+    fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
+    fwrite(outputImg, sizeof(unsigned char), size, outputFile);
 
-    //fclose(outputFile);
-    //free(outputImg);
-    //free(Y);
+    fclose(outputFile);
+    free(outputImg);
 }

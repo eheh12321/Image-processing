@@ -94,7 +94,8 @@ int main()
     // ****************************************************************    
     
     compression("./image/original/AICenterY_Org.bmp");
-    decoding("A");
+    decoding("bitstream.txt");
+    PSNR("./image/decoding.bmp");
 
     printf("\n* Processing Complete! *\n");
 
