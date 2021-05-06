@@ -8,4 +8,4 @@
 - 210330 : Histogram, Stretched_Histogram 
 - 210407 : Gamma correction, Gamma encoding
 - 210424 : 중간고사 Upsampling project 제출 (upsampling시 ratio 지정 가능하게끔)
-- 210506 : Bitstream Encoding <-> Decoding (8bit) 테
+- 210506 : Bitstream Encoding <-> Decoding (8bit) 테스트
