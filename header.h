@@ -2,6 +2,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <windows.h>
+#include <string.h>
 #include <math.h>
 #include <time.h>
 
@@ -58,4 +59,6 @@ void edge_thresholding(char* address, int thr);
 //
 
 void compression(char* address);
-void decoding(char* address);
+void decoding(char* address, BITMAPFILEHEADER bmpFile, BITMAPINFOHEADER bmpInfo);
+void test_decoding(char* address, BITMAPFILEHEADER bmpFile, BITMAPINFOHEADER bmpInfo);
+void quantization_comp(char* address);

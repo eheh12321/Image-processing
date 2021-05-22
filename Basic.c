@@ -8,6 +8,14 @@ FILE* open_image()
 
 int main()
 {
+    FILE* inputFile = NULL;
+    inputFile = fopen("./image/original/AICenter.bmp", "rb");
+
+    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
+    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
+
+    fclose(inputFile);
+
     rgb_color_test();
     ycbcr_color_test();
     HSI();
@@ -94,8 +102,18 @@ int main()
     // ****************************************************************    
     
     compression("./image/original/AICenterY_Org.bmp");
-    decoding("bitstream.txt");
+    decoding("bitstream.txt", bmpFile, bmpInfo);
+
+    printf("\nDecoding\n");
     PSNR("./image/decoding.bmp");
+
+    quantization_comp("./image/original/AICenterY_Org.bmp");
+    printf("\nQuantization\n");
+    PSNR("./image/quantization.bmp");
+
+    test_decoding("bitstream_test.txt", bmpFile, bmpInfo);
+    printf("\ntest_Decoding\n");
+    PSNR("./image/test_decoding.bmp");
 
     printf("\n* Processing Complete! *\n");
 
