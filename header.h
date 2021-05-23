@@ -61,4 +61,4 @@ void edge_thresholding(char* address, int thr);
 void compression(char* address);
 void decoding(char* address, BITMAPFILEHEADER bmpFile, BITMAPINFOHEADER bmpInfo);
 void test_decoding(char* address, BITMAPFILEHEADER bmpFile, BITMAPINFOHEADER bmpInfo);
-void quantization_comp(char* address);
+void quantization_comp(char* address, char* output);

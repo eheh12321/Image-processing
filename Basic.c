@@ -107,7 +107,7 @@ int main()
     printf("\nDecoding\n");
     PSNR("./image/decoding.bmp");
 
-    quantization_comp("./image/original/AICenterY_Org.bmp");
+    quantization_comp("./image/original/AICenterY_Org.bmp", "bitstream_test.txt");
     printf("\nQuantization\n");
     PSNR("./image/quantization.bmp");
 

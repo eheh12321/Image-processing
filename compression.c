@@ -1,7 +1,7 @@
 #include "header.h"
 
 
-void quantization_comp(char* address)
+void quantization_comp(char* address, char* output)
 {
     FILE* inputFile = NULL;
     inputFile = fopen(address, "rb");
@@ -32,55 +32,32 @@ void quantization_comp(char* address)
             Y[j * width + i] = inputImg[j * stride + 3 * i + 0] / 16 * 16;
         }
     }
-
-    //printf("\n[Difference]\n");
-    //for (int j = 0; j < 256; j++)
-    //{
-    //    for (int i = 0; i < 50; i++)
-    //    {
-    //        printf("%3d ", Y[j * width + i] / 16);
-    //    }printf("\n");
-    //}
-
-    int bsize = 3;
-
+    int bsize = 4;
     char bitlist_4[17][5] = { "0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111" };
     char bitlist_3[8][4] = {"000", "001", "010", "011", "100", "101", "110", "111"};
-    //char unbitlist[10][11] = { "0", "10", "110", "1110", "111110", "1111110", "11111110", "111111110", "1111111110", "11111111110"};
     char unbitlist[5][5] = { "0", "10", "110", "1110" };
     int block[17] = { 0 }; // 1번 인덱스부터 1. 16번 인덱스가 16
-    FILE* fp = fopen("bitstream_test.txt", "w");
+    int ar[4][4];
+    FILE* fp = fopen(output, "w");
 
-    int a1, a2, a3, b1, b2, b3, c1, c2, c3;
     int maxidx, minidx, diff;
-    for (int jj = 0; jj < height - bsize; jj += bsize)
+    for (int jj = 0; jj <= height - bsize; jj += bsize)
     {
-        for (int ii = 0; ii < width - bsize; ii += bsize)
+        for (int ii = 0; ii <= width - bsize; ii += bsize)
         {
             for (int k = 0; k < 17; k++)
             {
                 block[k] = 0;
             }
 
-            a1 = (int)Y[(jj + 0) * width + ii + 0] / 16;
-            a2 = (int)Y[(jj + 0) * width + ii + 1] / 16;
-            a3 = (int)Y[(jj + 0) * width + ii + 2] / 16;
-            b1 = (int)Y[(jj + 1) * width + ii + 0] / 16;
-            b2 = (int)Y[(jj + 1) * width + ii + 1] / 16;
-            b3 = (int)Y[(jj + 1) * width + ii + 2] / 16;
-            c1 = (int)Y[(jj + 2) * width + ii + 0] / 16;
-            c2 = (int)Y[(jj + 2) * width + ii + 1] / 16;
-            c3 = (int)Y[(jj + 2) * width + ii + 2] / 16;
-
-            block[a1] += 1;
-            block[a2] += 1;
-            block[a3] += 1;
-            block[b1] += 1; 
-            block[b2] += 1;
-            block[b3] += 1;
-            block[c1] += 1;
-            block[c2] += 1;
-            block[c3] += 1;
+            for (int y = 0; y < bsize; y++)
+            {
+                for (int x = 0; x < bsize; x++)
+                {
+                    ar[y][x] = (int)(Y[(jj + y) * width + ii + x] / 16);
+                    block[ar[y][x]] += 1;
+                }
+            }
 
             //블럭 내 최대 차이 구하기
             maxidx = minidx = 0;
@@ -97,68 +74,52 @@ void quantization_comp(char* address)
             }
             diff = maxidx - minidx;
 
-            a1 = (a1 - minidx);
-            a2 = (a2 - minidx);
-            a3 = (a3 - minidx);
-            b1 = (b1 - minidx); 
-            b2 = (b2 - minidx);
-            b3 = (b3 - minidx);
-            c1 = (c1 - minidx);
-            c2 = (c2 - minidx);
-            c3 = (c3 - minidx);
-            
-            a1 > 7 ? (a1 = 7) : a1;
-            a2 > 7 ? (a2 = 7) : a2;
-            a3 > 7 ? (a3 = 7) : a3;
-            b1 > 7 ? (b1 = 7) : b1;
-            b2 > 7 ? (b2 = 7) : b2;
-            b3 > 7 ? (b3 = 7) : b3;
-            c1 > 7 ? (c1 = 7) : c1;
-            c2 > 7 ? (c2 = 7) : c2;
-            c3 > 7 ? (c3 = 7) : c3;
+            for (int y = 0; y < bsize; y++)
+            {
+                for (int x = 0; x < bsize; x++)
+                {
+                    ar[y][x] -= minidx;
+                    ar[y][x] > 7 ? (ar[y][x] = 7) : ar[y][x];
+                }
+            }
             
             if (diff <= 3) // 차이가 0, 1, 2인 경우 -> 유동형 비트방식으로 처리
             {
                 fputs("1", fp);
                 fputs(bitlist_4[minidx], fp); // DC Gain값 전송
 
-                fputs(unbitlist[a1], fp);
-                fputs(unbitlist[a2], fp);
-                fputs(unbitlist[a3], fp);
-                fputs(unbitlist[b1], fp);
-                fputs(unbitlist[b2], fp);
-                fputs(unbitlist[b3], fp);
-                fputs(unbitlist[c1], fp);
-                fputs(unbitlist[c2], fp);
-                fputs(unbitlist[c3], fp);
+                for (int y = 0; y < bsize; y++)
+                {
+                    for (int x = 0; x < bsize; x++)
+                    {
+                        fputs(unbitlist[ar[y][x]], fp);
+                    }
+                }
             }
             else // 4 이상인 경우 -> 고정형 비트 방식으로 처리
             {
                 fputs("0", fp);
                 fputs(bitlist_4[minidx], fp); // DC Gain값 전송
 
-                fputs(bitlist_3[a1], fp);
-                fputs(bitlist_3[a2], fp);
-                fputs(bitlist_3[a3], fp);
-                fputs(bitlist_3[b1], fp);
-                fputs(bitlist_3[b2], fp);
-                fputs(bitlist_3[b3], fp);
-                fputs(bitlist_3[c1], fp);
-                fputs(bitlist_3[c2], fp);
-                fputs(bitlist_3[c3], fp);
+                for (int y = 0; y < bsize; y++)
+                {
+                    for (int x = 0; x < bsize; x++)
+                    {
+                        fputs(bitlist_3[ar[y][x]], fp);
+                    }
+                }
             }
 
-            Y[(jj + 0) * width + ii + 0] = (unsigned char)((minidx + a1) * 16);
-            Y[(jj + 0) * width + ii + 1] = (unsigned char)((minidx + a2) * 16);
-            Y[(jj + 0) * width + ii + 2] = (unsigned char)((minidx + a3) * 16);
-            Y[(jj + 1) * width + ii + 0] = (unsigned char)((minidx + b1) * 16);
-            Y[(jj + 1) * width + ii + 1] = (unsigned char)((minidx + b2) * 16);
-            Y[(jj + 1) * width + ii + 2] = (unsigned char)((minidx + b3) * 16);
-            Y[(jj + 2) * width + ii + 0] = (unsigned char)((minidx + c1) * 16);
-            Y[(jj + 2) * width + ii + 1] = (unsigned char)((minidx + c2) * 16);
-            Y[(jj + 2) * width + ii + 2] = (unsigned char)((minidx + c3) * 16);
+            for (int y = 0; y < bsize; y++)
+            {
+                for (int x = 0; x < bsize; x++)
+                {
+                    Y[(jj + y) * width + ii + x] = (unsigned char)((minidx + ar[y][x]) * 16);
+                }
+            }
         }
     }
+
     fclose(fp);
     
     for (int j = 0; j < height; j++)
@@ -286,24 +247,67 @@ void test_decoding(char* address, BITMAPFILEHEADER bmpFile, BITMAPINFOHEADER bmp
     unsigned char* Y = NULL;
     Y = (unsigned char*)calloc(size / 3, sizeof(unsigned char));
 
-    char buffer[5];
-    int bsize = 2;
-
+    char info[2];
+    char gain[5];
+    char buffer[4];
+    char ch;
+    int n, cnt;
+    int bsize = 4;
+    int gain_value;
+    int ar[4][4];
     FILE* fp = fopen(address, "r");
-    
-    //int a, b, c, d;
-    //for (int jj = 0; jj < height; jj += bsize)
-    //{
-    //    for (int ii = 0; ii < width; ii += bsize)
-    //    {
 
-    //        Y[(jj + 0) * width + ii + 0] = (unsigned char)(a * 16);
-    //        Y[(jj + 0) * width + ii + 1] = (unsigned char)(b * 16);
-    //        Y[(jj + 1) * width + ii + 0] = (unsigned char)(c * 16);
-    //        Y[(jj + 1) * width + ii + 1] = (unsigned char)(d * 16);
-    //    }
-    //}
-    fclose(fp);
+    for (int jj = 0; jj <= height - bsize; jj += bsize)
+    {
+        for (int ii = 0; ii <= width - bsize; ii += bsize)
+        {
+            fgets(info, sizeof(info), fp);
+
+            if (strcmp(info, "1") == 0)
+            {
+                fgets(gain, sizeof(gain), fp);
+                gain_value = convert(gain);
+
+                for (int j = 0; j < bsize; j++)
+                {
+                    for (int i = 0; i < bsize; i++)
+                    {
+                        cnt = 0;
+                        while (1)
+                        {
+                            ch = fgetc(fp);
+                            n = (int)ch - 48;
+                            if (n == 0 || cnt >= 3) break;
+                            cnt += 1;
+                        }
+                        ar[j][i] = gain_value + cnt;
+                    }
+                }
+            }
+            else
+            {
+                fgets(gain, sizeof(gain), fp);
+                gain_value = convert(gain);
+
+                for (int j = 0; j < bsize; j++)
+                {
+                    for (int i = 0; i < bsize; i++)
+                    {
+                        fgets(buffer, sizeof(buffer), fp);
+                        ar[j][i] = convert(buffer) + gain_value;
+                    }
+                }
+            }
+
+            for (int j = 0; j < bsize; j++)
+            {
+                for (int i = 0; i < bsize; i++)
+                {
+                    Y[(jj + j) * width + ii + i] = (unsigned char)(ar[j][i] * 16);
+                }
+            }
+        }
+    }
 
     unsigned char* outputImg = NULL;
     outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));

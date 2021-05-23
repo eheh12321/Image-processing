@@ -9,4 +9,4 @@
 - 210407 : Gamma correction, Gamma encoding
 - 210424 : 중간고사 Upsampling project 제출 (upsampling시 ratio 지정 가능하게끔)
 - 210506 : Bitstream Encoding <-> Decoding (8bit) 테스트
-- 210523 : Compression 과제 ver.2
+- 210523 : Compression 최종
