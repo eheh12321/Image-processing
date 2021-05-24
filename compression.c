@@ -80,6 +80,7 @@ void quantization_comp(char* address, char* output)
                 {
                     ar[y][x] -= minidx;
                     ar[y][x] > 7 ? (ar[y][x] = 7) : ar[y][x];
+                    ar[y][x] < 0 ? (ar[y][x] = 0) : ar[y][x];
                 }
             }
             
