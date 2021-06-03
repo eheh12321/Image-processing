@@ -21,9 +21,9 @@ void gau_filter(char* address);
 
 // ************
 
-void rgb_color_test();
-void ycbcr_color_test();
-void HSI();
+void rgb_color_test(char* address);
+void ycbcr_color_test(char* address);
+void HSI(char* address);
 void YI_diff();
 void watermark();
 void masking();
@@ -62,3 +62,8 @@ void compression(char* address);
 void decoding(char* address, BITMAPFILEHEADER bmpFile, BITMAPINFOHEADER bmpInfo);
 void test_decoding(char* address, BITMAPFILEHEADER bmpFile, BITMAPINFOHEADER bmpInfo);
 void quantization_comp(char* address, char* output);
+
+//
+
+void Jalhaja_vertical(char* address, char* output);
+void Jalhaja_horizontal(char* address, char* output);

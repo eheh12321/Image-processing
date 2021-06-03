@@ -236,7 +236,6 @@ int convert(char* str)
     }
     return dec;
 }
-
 void test_decoding(char* address, BITMAPFILEHEADER bmpFile, BITMAPINFOHEADER bmpInfo)
 {
     int width = bmpInfo.biWidth;
@@ -331,7 +330,6 @@ void test_decoding(char* address, BITMAPFILEHEADER bmpFile, BITMAPINFOHEADER bmp
     fclose(outputFile);
     free(outputImg);
 }
-
 void decoding(char* address, BITMAPFILEHEADER bmpFile, BITMAPINFOHEADER bmpInfo)
 {
     int width = bmpInfo.biWidth;
@@ -403,4 +401,178 @@ void decoding(char* address, BITMAPFILEHEADER bmpFile, BITMAPINFOHEADER bmpInfo)
 
     fclose(outputFile);
     free(outputImg);
+}
+
+void Jalhaja_horizontal(char* address, char* output)
+{
+    FILE* inputFile = NULL;
+    inputFile = fopen(address, "rb");
+
+    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
+    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
+
+    int width = bmpInfo.biWidth;
+    int height = bmpInfo.biHeight;
+    int size = bmpInfo.biSizeImage; // height * width * 3 (R,G,B) !!!
+    int bitCnt = bmpInfo.biBitCount;
+    int stride = (((bitCnt / 8) * width) + 3) / 4 * 4; // (width * 3) >> 한 픽셀에 R,G,B 3개 값을 넣기 위해 3배로 늘림 
+
+    unsigned char* inputImg = NULL;
+    inputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+    fread(inputImg, sizeof(unsigned char), size, inputFile);
+
+    unsigned char* outputImg = NULL;
+    outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+
+    unsigned char* Y = NULL;
+    Y = (unsigned char*)calloc(size / 3, sizeof(unsigned char));
+
+    unsigned char* Y2 = NULL;
+    Y2 = (unsigned char*)calloc(size / 3, sizeof(unsigned char));
+
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            Y[j * width + i] = inputImg[j * stride + 3 * i + 0];
+        }
+    }
+
+    int bsize = 4;
+    int qvalue = 1;
+    int arr[4][4];
+
+    for (int j = 0; j <= height - bsize; j += bsize)
+    {
+        for (int i = 0; i <= width - bsize; i += bsize)
+        {
+            for (int y = 0; y < bsize; y++)
+            {
+                arr[y][0] = Y[(j + y) * width + i] - 128;
+                arr[y][0] /= qvalue;
+                arr[y][0] *= qvalue;
+                arr[y][0] += 128;
+                arr[y][0] > 255 ? (arr[y][0] = 255) : (arr[y][0] < 0 ? (arr[y][0] = 0) : arr[y][0]);
+                Y2[(j + y) * width + i] = arr[y][0];
+
+                for (int x = 1; x < bsize; x++)
+                {
+                    arr[y][x] = Y[(j + y) * width + i + x] - arr[y][x - 1];
+                    arr[y][x] /= qvalue;
+                    arr[y][x] *= qvalue;
+                    arr[y][x] += arr[y][x - 1];                
+                    arr[y][x] > 255 ? (arr[y][x] = 255) : (arr[y][x] < 0 ? (arr[y][x] = 0) : arr[y][x]);
+                    Y2[(j + y) * width + i + x] = arr[y][x];
+                }
+            }
+        }
+    }
+
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            outputImg[j * stride + 3 * i + 0] = Y2[j * width + i];
+            outputImg[j * stride + 3 * i + 1] = Y2[j * width + i];
+            outputImg[j * stride + 3 * i + 2] = Y2[j * width + i];
+        }
+    }
+
+    FILE* outputFile = fopen(output, "wb");
+    fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
+    fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
+    fwrite(outputImg, sizeof(unsigned char), size, outputFile);
+
+    free(inputImg);
+    free(outputImg);
+    fclose(inputFile);
+    fclose(outputFile);
+}
+
+void Jalhaja_vertical(char* address, char* output)
+{
+    FILE* inputFile = NULL;
+    inputFile = fopen(address, "rb");
+
+    fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
+    fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
+
+    int width = bmpInfo.biWidth;
+    int height = bmpInfo.biHeight;
+    int size = bmpInfo.biSizeImage; // height * width * 3 (R,G,B) !!!
+    int bitCnt = bmpInfo.biBitCount;
+    int stride = (((bitCnt / 8) * width) + 3) / 4 * 4; // (width * 3) >> 한 픽셀에 R,G,B 3개 값을 넣기 위해 3배로 늘림 
+
+    unsigned char* inputImg = NULL;
+    inputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+    fread(inputImg, sizeof(unsigned char), size, inputFile);
+
+    unsigned char* outputImg = NULL;
+    outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
+
+    unsigned char* Y = NULL;
+    Y = (unsigned char*)calloc(size / 3, sizeof(unsigned char));
+
+    unsigned char* Y2 = NULL;
+    Y2 = (unsigned char*)calloc(size / 3, sizeof(unsigned char));
+
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            Y[j * width + i] = inputImg[j * stride + 3 * i + 0];
+        }
+    }
+
+    int bsize = 4;
+    int qvalue = 1;
+    int arr[4][4];
+
+    for (int j = 0; j <= height - bsize; j += bsize)
+    {
+        for (int i = 0; i <= width - bsize; i += bsize)
+        {
+            for (int x = 0; x < bsize; x++)
+            {
+                arr[0][x] = Y[j * width + i + x] - 128;
+                arr[0][x] /= qvalue;
+                arr[0][x] *= qvalue;
+                arr[0][x] += 128;
+
+                arr[0][x] > 255 ? (arr[0][x] = 255) : (arr[0][x] < 0 ? (arr[0][x] = 0) : arr[0][x]);
+                Y2[j * width + i + x] = arr[0][x];
+                
+                for (int y = 1; y < bsize; y++)
+                {
+                    arr[y][x] = Y[(j + y) * width + i + x] - arr[y - 1][x];
+                    arr[y][x] /= qvalue;
+                    arr[y][x] *= qvalue;
+                    arr[y][x] += arr[y - 1][x];
+
+                    arr[y][x] > 255 ? (arr[y][x] = 255) : (arr[y][x] < 0 ? (arr[y][x] = 0) : arr[y][x]);
+                    Y2[(j + y) * width + i + x] = arr[y][x];
+                }
+            }
+        }
+    }
+
+    for (int j = 0; j < height; j++)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            outputImg[j * stride + 3 * i + 0] = Y2[j * width + i];
+            outputImg[j * stride + 3 * i + 1] = Y2[j * width + i];
+            outputImg[j * stride + 3 * i + 2] = Y2[j * width + i];
+        }
+    }
+
+    FILE* outputFile = fopen(output, "wb");
+    fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
+    fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
+    fwrite(outputImg, sizeof(unsigned char), size, outputFile);
+
+    free(inputImg);
+    free(outputImg);
+    fclose(inputFile);
+    fclose(outputFile);
 }

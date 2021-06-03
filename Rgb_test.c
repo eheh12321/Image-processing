@@ -1,10 +1,10 @@
 #pragma once
 #include "header.h"
 
-void rgb_color_test()
+void rgb_color_test(char* address)
 {
     FILE* inputFile = NULL;
-    inputFile = open_image();
+    inputFile = fopen(address, "rb");
 
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
     fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);

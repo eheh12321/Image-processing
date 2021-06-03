@@ -1,11 +1,11 @@
 #pragma once
 #include "header.h"
 
-void ycbcr_color_test()
+void ycbcr_color_test(char* address)
 {
 
     FILE* inputFile = NULL;
-    inputFile = open_image();
+    inputFile = fopen(address, "rb");
 
     int width = bmpInfo.biWidth;
     int height = bmpInfo.biHeight;

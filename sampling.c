@@ -10,24 +10,22 @@ void down_sampling_sub(char* address, char* output, int ratio)
 
     int width = bmpInfo.biWidth;
     int height = bmpInfo.biHeight;
-    int size = bmpInfo.biSizeImage; // size = width * height * 3
+    int size = bmpInfo.biSizeImage; // size = width * height * 3(R, G, B)
     int bitCnt = bmpInfo.biBitCount;
     int stride = (((bitCnt / 8) * width) + 3) / 4 * 4;
-    
+
     // ****************
     
-    int width2 = bmpInfo.biWidth >> ratio;
+    int width2 = bmpInfo.biWidth >> ratio; // >> b : b번만큼 / 2 수행
     int height2 = bmpInfo.biHeight >> ratio;
     int stride2 = (((bitCnt / 8) * width2) + 3) / 4 * 4;
-    int size2 = stride2 * height2; // width(=> stride) * height * 3
+    int size2 = stride2 * height2; // stride (= width * 3) * height = size
 
     // ****************
 
     unsigned char* inputImg = NULL;
     inputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
     fread(inputImg, sizeof(unsigned char), size, inputFile);
-
-    // ****************
 
     unsigned char* Y1 = NULL;
     Y1 = (unsigned char*)calloc(size / 3, sizeof(unsigned char));
@@ -50,7 +48,7 @@ void down_sampling_sub(char* address, char* output, int ratio)
     {
         for (int i = 0; i < width2; i++)
         {
-            Y2[j * width2 + i] = Y1[(j << ratio) * width + (i << ratio)];
+            Y2[j * width2 + i] = Y1[(j << ratio) * width + (i << ratio)]; // 단순히 x칸마다 한번씩 추출하는 방식
 
             outputImg[j * stride2 + 3 * i + 0] = Y2[j * width2 + i];
             outputImg[j * stride2 + 3 * i + 1] = Y2[j * width2 + i];
@@ -104,8 +102,6 @@ void down_sampling_avg(char* address, char* output, int ratio)
     inputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
     fread(inputImg, sizeof(unsigned char), size, inputFile);
 
-    // ****************
-
     unsigned char* Y1 = NULL;
     Y1 = (unsigned char*)calloc(size / 3, sizeof(unsigned char));
 
@@ -123,11 +119,23 @@ void down_sampling_avg(char* address, char* output, int ratio)
         }
     }
 
+    double sum, avg;
     for (int j = 0; j < height2; j++)
     {
         for (int i = 0; i < width2; i++)
         {
-            Y2[j * width2 + i] = (unsigned char)((Y1[(j << ratio) * width + (i << ratio)] + Y1[(j << ratio) * width + (i << ratio) + 1] + Y1[((j << ratio) + 1) * width + (i << ratio) + 0] + Y1[((j << ratio) + 1) * width +  (i << ratio) + 1]) / 4);
+            sum = avg = 0;
+
+            for (int y = 0; y < ratio; y++)
+            {
+                for (int x = 0; x < ratio; x++)
+                {
+                    sum += Y1[((j << ratio) + y) * width + (i << ratio) + x];
+                }
+            }
+            avg = sum / (ratio * ratio);
+
+            Y2[j * width2 + i] = (unsigned char)avg;
 
             outputImg[j * stride2 + 3 * i + 0] = Y2[j * width2 + i];
             outputImg[j * stride2 + 3 * i + 1] = Y2[j * width2 + i];
@@ -135,6 +143,7 @@ void down_sampling_avg(char* address, char* output, int ratio)
         }
     }
 
+    
     FILE* outputFile = fopen(output, "wb");
     bmpInfo.biWidth = width2;
     bmpInfo.biHeight = height2;

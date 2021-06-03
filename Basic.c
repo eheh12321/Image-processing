@@ -1,24 +1,20 @@
 #include "header.h"
 
-FILE* open_image()
-{
-    FILE* inputFile = NULL;
-    return inputFile = fopen("./image/original/AICenter.bmp", "rb");
-}
+#define address "./image/original/IU.bmp"
 
 int main()
 {
     FILE* inputFile = NULL;
-    inputFile = fopen("./image/original/AICenter.bmp", "rb");
+    inputFile = fopen(address, "rb");
 
     fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFile);
     fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFile);
 
     fclose(inputFile);
 
-    rgb_color_test();
-    ycbcr_color_test();
-    HSI();
+    rgb_color_test(address);
+    ycbcr_color_test(address);
+    HSI(address);
     YI_diff();
     watermark();
     masking();
@@ -69,30 +65,38 @@ int main()
 
     // ****************************************************************
 
-    down_sampling_sub("./image/Output_Y.bmp", "./image/Output_Dsampling.bmp", 2);
-    down_sampling_avg("./image/Output_Y.bmp", "./image/Output_Dsampling_a.bmp", 2);
+    down_sampling_sub("./image/Output_Y.bmp", "./image/Output_dsampling_sub.bmp", 2);
+    down_sampling_avg("./image/Output_Y.bmp", "./image/Output_dsampling_avg.bmp", 2);
 
-    up_sampling_nearest("./image/original/AICenterY_Subsampling.bmp", "./image/Output_Usampling_n.bmp", 1);
-    printf("\nUpsampling after Downsampling\n");
-    PSNR("./image/Output_Usampling_n.bmp");
+    up_sampling_nearest("./image/Output_dsampling_sub.bmp", "./image/Output_Usampling_dsub.bmp", 2);
+    printf("\nUpsampling after Downsampling(subsampling)\n");
+    PSNR("./image/Output_Usampling_dsub.bmp");
 
-    up_sampling_biint("./image/original/AICenterY_Subsampling.bmp", "./image/Output_Usampling_b.bmp", 1);
-    printf("\nUpsampling after Downsampling\n");
-    PSNR("./image/Output_Usampling_b.bmp");
+    up_sampling_nearest("./image/Output_dsampling_avg.bmp", "./image/Output_Usampling_davg.bmp", 2);
+    printf("\nUpsampling after Downsampling(average dowmsampling)\n");
+    PSNR("./image/Output_Usampling_davg.bmp");
 
-    // ****************************************************************
+    //up_sampling_nearest("./image/original/AICenterY_Subsampling.bmp", "./image/Output_Usampling_n.bmp", 1);
+    //printf("\nUpsampling after Downsampling\n");
+    //PSNR("./image/Output_Usampling_n.bmp");
 
-    up_sampling_nearest("./image/original/AICenterY_128X128.bmp", "./image/Output_Usampling_n.bmp", 2);
-    printf("\nNEAREST UPSCAILING\n");
-    PSNR("./image/Output_Usampling_n.bmp");
-
-    upsampling_midterm("./image/original/AICenterY_128X128.bmp", "./image/midterm.bmp", 2, 4);
-    printf("\nRESULT\n");
-    PSNR("./image/midterm.bmp");
+    //up_sampling_biint("./image/original/AICenterY_Subsampling.bmp", "./image/Output_Usampling_b.bmp", 1);
+    //printf("\nUpsampling after Downsampling\n");
+    //PSNR("./image/Output_Usampling_b.bmp");
 
     // ****************************************************************
 
-    edge("./image/original/AICenterY_Org.bmp");
+    //up_sampling_nearest("./image/original/AICenterY_128X128.bmp", "./image/Output_Usampling_n.bmp", 2);
+    //printf("\nNEAREST UPSCAILING\n");
+    //PSNR("./image/Output_Usampling_n.bmp");
+
+    //upsampling_midterm("./image/original/AICenterY_128X128.bmp", "./image/midterm.bmp", 2, 4);
+    //printf("\nRESULT\n");
+    //PSNR("./image/midterm.bmp");
+
+    // ****************************************************************
+
+    edge("./image/Output_Y.bmp");
     sobel_edge("./image/Output_Y.bmp");
     prewitt_edge("./image/Output_Y.bmp");
     edge_thresholding("./image/Output_sobel_Edge.bmp", 150);
@@ -101,19 +105,29 @@ int main()
 
     // ****************************************************************    
     
-    compression("./image/original/AICenterY_Org.bmp");
+    compression("./image/Output_Y.bmp");
     decoding("bitstream.txt", bmpFile, bmpInfo);
 
     printf("\nDecoding\n");
     PSNR("./image/decoding.bmp");
 
-    quantization_comp("./image/original/AICenterY_Org.bmp", "bitstream_test.txt");
+    quantization_comp("./image/Output_Y.bmp", "bitstream_test.txt");
     printf("\nQuantization\n");
     PSNR("./image/quantization.bmp");
 
     test_decoding("bitstream_test.txt", bmpFile, bmpInfo);
     printf("\ntest_Decoding\n");
     PSNR("./image/test_decoding.bmp");
+
+    // **************************************************************** 
+
+    Jalhaja_horizontal("./image/Output_Y.bmp", "./image/Jalhaza_horizontal.bmp");
+    printf("\nJalhaja_horizontal\n");
+    PSNR("./image/Jalhaza_horizontal.bmp");
+
+    Jalhaja_vertical("./image/Output_Y.bmp", "./image/Jalhaza_vertical.bmp");
+    printf("\nJalhaja_vertical\n");
+    PSNR("./image/Jalhaza_vertical.bmp");
 
     printf("\n* Processing Complete! *\n");
 
